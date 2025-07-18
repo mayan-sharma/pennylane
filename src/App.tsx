@@ -6,12 +6,13 @@ import { ExpenseForm } from './components/ExpenseForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { BackupRestore } from './components/BackupRestore';
 import { BudgetManagement } from './components/BudgetManagement';
+import { SmartAnalytics } from './components/SmartAnalytics';
 import { useExpenses } from './hooks/useExpenses';
 import { useBudgets } from './hooks/useBudgets';
 import type { ExpenseFormData, Expense } from './types/expense';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'budgets' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'budgets' | 'analytics' | 'settings'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   
@@ -122,6 +123,10 @@ function App() {
               onDeleteBudget={deleteBudget}
             />
           )}
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          {activeTab === 'analytics' && <SmartAnalytics />}
         </ErrorBoundary>
 
         <ErrorBoundary>
