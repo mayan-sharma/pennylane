@@ -1,0 +1,21 @@
+Create a modern expense tracker web app using Vite, TypeScript, and Tailwind CSS.
+
+Core features to implement first:
+- Add/edit/delete expenses with date, amount, category, description
+- Basic expense categorization (Food, Transport, Bills, Entertainment, etc.)
+- Simple dashboard showing total expenses and recent transactions
+- Basic expense list with search and filter by date/category
+- Local storage for data persistence
+
+Future features to implement later:
+- Kotak Bank API integration for automatic transaction import
+- Tax calculation (income tax, GST tracking, deductions)
+- Receipt photo uploads with OCR
+- Budgeting tools and spending limits
+- Advanced reporting and analytics
+- Data export/import (CSV/Excel)
+- Multi-currency support
+- Bill reminders and notifications
+
+Focus on clean, responsive UI with good performance. Use modern React patterns with TypeScript for type
+safety.
