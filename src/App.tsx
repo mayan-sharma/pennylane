@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { BackupRestore } from './components/BackupRestore';
+import { BudgetManagement } from './components/BudgetManagement';
 import { useExpenses } from './hooks/useExpenses';
+import { useBudgets } from './hooks/useBudgets';
 import type { ExpenseFormData, Expense } from './types/expense';
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'budgets' | 'settings'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   
@@ -18,8 +22,18 @@ function App() {
     updateExpense,
     deleteExpense,
     getExpenseStats,
-    getRecentExpenses
+    getRecentExpenses,
+    loadExpenses
   } = useExpenses();
+
+  const {
+    loading: budgetsLoading,
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    getAllBudgetStatuses,
+    getActiveAlerts,
+  } = useBudgets(expenses);
 
   const handleAddExpense = () => {
     setEditingExpense(null);
@@ -63,44 +77,74 @@ function App() {
     }
   };
 
-  if (loading) {
+  if (loading || budgetsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading expenses...</p>
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === 'dashboard' && (
-        <Dashboard
-          stats={getExpenseStats()}
-          recentExpenses={getRecentExpenses()}
-          onAddExpense={handleAddExpense}
-        />
-      )}
-      
-      {activeTab === 'expenses' && (
-        <ExpenseList
-          expenses={expenses}
-          onEditExpense={handleEditExpense}
-          onDeleteExpense={handleDeleteExpense}
-        />
-      )}
+    <ErrorBoundary>
+      <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+        <ErrorBoundary>
+          {activeTab === 'dashboard' && (
+            <Dashboard
+              stats={getExpenseStats()}
+              recentExpenses={getRecentExpenses()}
+              budgetStatuses={getAllBudgetStatuses()}
+              budgetAlerts={getActiveAlerts()}
+              onAddExpense={handleAddExpense}
+            />
+          )}
+        </ErrorBoundary>
+        
+        <ErrorBoundary>
+          {activeTab === 'expenses' && (
+            <ExpenseList
+              expenses={expenses}
+              onEditExpense={handleEditExpense}
+              onDeleteExpense={handleDeleteExpense}
+            />
+          )}
+        </ErrorBoundary>
 
-      {showForm && (
-        <ExpenseForm
-          onSubmit={handleFormSubmit}
-          onCancel={handleFormCancel}
-          initialData={editingExpense || undefined}
-          isEditing={!!editingExpense}
-        />
-      )}
-    </Layout>
+        <ErrorBoundary>
+          {activeTab === 'budgets' && (
+            <BudgetManagement
+              budgetStatuses={getAllBudgetStatuses()}
+              onAddBudget={addBudget}
+              onUpdateBudget={updateBudget}
+              onDeleteBudget={deleteBudget}
+            />
+          )}
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          {activeTab === 'settings' && (
+            <div className="space-y-6">
+              <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+              <BackupRestore onRestore={loadExpenses} />
+            </div>
+          )}
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          {showForm && (
+            <ExpenseForm
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              initialData={editingExpense || undefined}
+              isEditing={!!editingExpense}
+            />
+          )}
+        </ErrorBoundary>
+      </Layout>
+    </ErrorBoundary>
   );
 }
 

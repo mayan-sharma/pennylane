@@ -60,7 +60,7 @@ export const useExpenses = () => {
   const getExpenseStats = useCallback((): ExpenseStats => {
     const now = new Date();
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const thisWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+    const thisWeek = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
 
     const total = expenses.reduce((sum, expense) => sum + expense.amount, 0);
     const thisMonthTotal = expenses
@@ -90,6 +90,11 @@ export const useExpenses = () => {
       .slice(0, limit);
   }, [expenses]);
 
+  const loadExpenses = useCallback(() => {
+    const storedExpenses = storage.getExpenses();
+    setExpenses(storedExpenses);
+  }, []);
+
   return {
     expenses,
     loading,
@@ -99,5 +104,6 @@ export const useExpenses = () => {
     getFilteredExpenses,
     getExpenseStats,
     getRecentExpenses,
+    loadExpenses,
   };
 };

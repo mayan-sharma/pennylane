@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ExpenseCategory, type Expense, type ExpenseFilters } from '../types/expense';
+import { exportToCSV, exportToJSON } from '../utils/exportUtils';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -44,6 +45,17 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN');
+  };
+
+  const handleExport = (format: 'csv' | 'json') => {
+    const dataToExport = filteredExpenses.length > 0 ? filteredExpenses : expenses;
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    if (format === 'csv') {
+      exportToCSV(dataToExport, `expenses_${timestamp}.csv`);
+    } else {
+      exportToJSON(dataToExport, `expenses_${timestamp}.json`);
+    }
   };
 
   return (
@@ -112,12 +124,28 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
           <span className="text-sm text-gray-600">
             Showing {filteredExpenses.length} of {expenses.length} expenses
           </span>
-          <button
-            onClick={clearFilters}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            Clear Filters
-          </button>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handleExport('csv')}
+              className="text-sm bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              aria-label="Export expenses as CSV file"
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={() => handleExport('json')}
+              className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Export expenses as JSON file"
+            >
+              Export JSON
+            </button>
+            <button
+              onClick={clearFilters}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Clear Filters
+            </button>
+          </div>
         </div>
       </div>
 
@@ -171,12 +199,14 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
                       <button
                         onClick={() => onEditExpense(expense)}
                         className="text-blue-600 hover:text-blue-900"
+                        aria-label={`Edit expense: ${expense.description}`}
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => onDeleteExpense(expense.id)}
                         className="text-red-600 hover:text-red-900"
+                        aria-label={`Delete expense: ${expense.description}`}
                       >
                         Delete
                       </button>

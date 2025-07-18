@@ -21,6 +21,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     description: '',
   });
 
+  const [errors, setErrors] = useState<Partial<Record<keyof ExpenseFormData, string>>>({});
+
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -32,9 +34,34 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     }
   }, [initialData]);
 
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof ExpenseFormData, string>> = {};
+    
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = 'Amount must be greater than 0';
+    }
+    
+    if (parseFloat(formData.amount) > 10000000) {
+      newErrors.amount = 'Amount cannot exceed ₹1,00,00,000';
+    }
+    
+    if (!formData.date) {
+      newErrors.date = 'Date is required';
+    }
+    
+    if (new Date(formData.date) > new Date()) {
+      newErrors.date = 'Date cannot be in the future';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (validateForm()) {
+      onSubmit(formData);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -43,6 +70,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       ...prev,
       [name]: value
     }));
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof ExpenseFormData]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   return (
@@ -65,8 +100,13 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 value={formData.date}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.date ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
               />
+              {errors.date && (
+                <p className="mt-1 text-sm text-red-600">{errors.date}</p>
+              )}
             </div>
 
             <div>
@@ -82,9 +122,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 min="0"
                 step="0.01"
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.amount ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
                 placeholder="0.00"
               />
+              {errors.amount && (
+                <p className="mt-1 text-sm text-red-600">{errors.amount}</p>
+              )}
             </div>
 
             <div>

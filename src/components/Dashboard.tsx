@@ -1,15 +1,20 @@
 import React from 'react';
-import { ExpenseCategory, type ExpenseStats, type Expense } from "../types/expense"
+import { ExpenseCategory, type ExpenseStats, type Expense, type BudgetStatus } from "../types/expense"
+import { BudgetAlerts } from './BudgetAlerts';
 
 interface DashboardProps {
   stats: ExpenseStats;
   recentExpenses: Expense[];
+  budgetStatuses?: BudgetStatus[];
+  budgetAlerts?: string[];
   onAddExpense: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   stats,
   recentExpenses,
+  budgetStatuses = [],
+  budgetAlerts = [],
   onAddExpense
 }) => {
   const formatCurrency = (amount: number) => {
@@ -50,10 +55,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <button
           onClick={onAddExpense}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label="Add new expense"
         >
           + Add Expense
         </button>
       </div>
+
+      <BudgetAlerts alerts={budgetAlerts} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
@@ -112,6 +120,38 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         </div>
       </div>
+
+      {budgetStatuses.length > 0 && (
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-lg font-semibold mb-4">Budget Overview</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {budgetStatuses.slice(0, 6).map((status) => (
+              <div key={status.budget.id} className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium">
+                    {status.budget.category === 'total' ? 'Total' : status.budget.category}
+                  </span>
+                  <span className="text-gray-500 capitalize">{status.budget.period}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full transition-all duration-300 ${
+                      status.isOverBudget ? 'bg-red-500' :
+                      status.percentUsed >= 90 ? 'bg-orange-500' :
+                      status.percentUsed >= 75 ? 'bg-yellow-500' : 'bg-green-500'
+                    }`}
+                    style={{ width: `${Math.min(100, status.percentUsed)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>{formatCurrency(status.spent)} spent</span>
+                  <span>{formatCurrency(status.budget.amount)} budget</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border">
