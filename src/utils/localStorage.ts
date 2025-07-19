@@ -147,3 +147,22 @@ export const storage = {
     storage.saveBudgets(filteredBudgets);
   }
 };
+
+// Generic storage utilities for tax data
+export const getStorageData = <T>(key: string, defaultValue: T): T => {
+  try {
+    const data = localStorage.getItem(key);
+    return data ? JSON.parse(data) : defaultValue;
+  } catch (error) {
+    console.error(`Error reading ${key} from localStorage:`, error);
+    return defaultValue;
+  }
+};
+
+export const setStorageData = <T>(key: string, value: T): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.error(`Error saving ${key} to localStorage:`, error);
+  }
+};
