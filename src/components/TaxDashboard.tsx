@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useInvestments } from '../hooks/useInvestments';
 import { useNotifications } from '../hooks/useNotifications';
 import { useTax } from '../hooks/useTax';
@@ -9,6 +9,9 @@ import {
   calculateIncomeTax,
   compareTaxRegimes
 } from '../utils/taxCalculation';
+import { TaxCalendar } from './TaxCalendar';
+import { DocumentTracker } from './DocumentTracker';
+import { ScenarioPlanner } from './ScenarioPlanner';
 import type { Expense } from '../types/expense';
 
 interface TaxDashboardProps {
@@ -16,8 +19,31 @@ interface TaxDashboardProps {
 }
 
 export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
-  const [selectedView, setSelectedView] = useState<'overview' | 'projection' | 'regime'>('overview');
+  const [selectedView, setSelectedView] = useState<'overview' | 'projection' | 'regime' | 'calendar' | 'documents' | 'scenarios'>('overview');
   const [mockIncome, setMockIncome] = useState(1200000);
+  const [debouncedIncome, setDebouncedIncome] = useState(1200000);
+  
+  // Debounce income input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedIncome(mockIncome);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [mockIncome]);
+  
+  // Persist selected view to localStorage
+  useEffect(() => {
+    const savedView = localStorage.getItem('taxDashboardView');
+    if (savedView) {
+      setSelectedView(savedView as 'overview' | 'projection' | 'regime');
+    }
+  }, []);
+  
+  const handleViewChange = useCallback((view: 'overview' | 'projection' | 'regime' | 'calendar' | 'documents' | 'scenarios') => {
+    setSelectedView(view);
+    localStorage.setItem('taxDashboardView', view);
+  }, []);
   
   const { getInvestmentSummary, getMaturingInvestments } = useInvestments();
   const { getUnreadCount, getHighPriorityNotifications } = useNotifications();
@@ -41,27 +67,26 @@ export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
   const investmentSummary = getInvestmentSummary();
   const totalDeductions = calculateTotalDeductions();
   const maturingInvestments = getMaturingInvestments();
-  const unreadNotifications = getUnreadCount();
   const highPriorityNotifications = getHighPriorityNotifications();
 
   const recommendations = useMemo(() => 
-    calculateInvestmentRecommendations(mockIncome, totalDeductions), 
-    [mockIncome, totalDeductions]
+    calculateInvestmentRecommendations(debouncedIncome, totalDeductions), 
+    [debouncedIncome, totalDeductions]
   );
 
   const taxProjection = useMemo(() => 
-    calculateTaxProjection(mockIncome, totalDeductions), 
-    [mockIncome, totalDeductions]
+    calculateTaxProjection(debouncedIncome, totalDeductions), 
+    [debouncedIncome, totalDeductions]
   );
 
   const regimeComparison = useMemo(() => 
-    compareTaxRegimes(mockIncome, totalDeductions), 
-    [mockIncome, totalDeductions]
+    compareTaxRegimes(debouncedIncome, totalDeductions), 
+    [debouncedIncome, totalDeductions]
   );
 
   const currentTax = useMemo(() => 
-    calculateIncomeTax(mockIncome, totalDeductions), 
-    [mockIncome, totalDeductions]
+    calculateIncomeTax(debouncedIncome, totalDeductions), 
+    [debouncedIncome, totalDeductions]
   );
 
   const CircularProgress = ({ percentage, size = 120, strokeWidth = 8, color = "blue" }: {
@@ -117,9 +142,13 @@ export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
             type="number"
             value={mockIncome}
             onChange={(e) => setMockIncome(Number(e.target.value) || 0)}
-            className="w-32 px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500"
+            className="w-32 px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
             placeholder="1200000"
+            aria-describedby="income-help"
           />
+          {mockIncome !== debouncedIncome && (
+            <div className="text-xs text-gray-500">Calculating...</div>
+          )}
         </div>
       </div>
 
@@ -129,12 +158,15 @@ export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
           {[
             { id: 'overview', label: 'Overview', icon: '📊' },
             { id: 'projection', label: 'Tax Projection', icon: '🔮' },
-            { id: 'regime', label: 'Regime Comparison', icon: '⚖️' }
+            { id: 'regime', label: 'Regime Comparison', icon: '⚖️' },
+            { id: 'scenarios', label: 'Scenario Planning', icon: '🎯' },
+            { id: 'calendar', label: 'Tax Calendar', icon: '📅' },
+            { id: 'documents', label: 'Documents', icon: '📋' }
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setSelectedView(tab.id as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
+              onClick={() => handleViewChange(tab.id as any)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors duration-200 ${
                 selectedView === tab.id
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -204,7 +236,7 @@ export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Annual Income</h3>
-                  <p className="text-2xl font-bold text-gray-900">{formatCompactCurrency(mockIncome)}</p>
+                  <p className="text-2xl font-bold text-gray-900">{formatCompactCurrency(debouncedIncome)}</p>
                   <p className="text-xs text-gray-500 mt-1">Financial Year {getFinancialYear()}</p>
                 </div>
                 <div className="p-3 bg-blue-100 rounded-lg">
@@ -359,8 +391,23 @@ export const TaxDashboard: React.FC<TaxDashboardProps> = ({ expenses }) => {
         </div>
       )}
 
+      {selectedView === 'calendar' && (
+        <TaxCalendar />
+      )}
+
+      {selectedView === 'documents' && (
+        <DocumentTracker />
+      )}
+
+      {selectedView === 'scenarios' && (
+        <ScenarioPlanner 
+          currentIncome={debouncedIncome} 
+          currentDeductions={totalDeductions} 
+        />
+      )}
+
       {/* Investment Recommendations */}
-      {recommendations.length > 0 && (
+      {selectedView !== 'calendar' && selectedView !== 'documents' && selectedView !== 'scenarios' && recommendations.length > 0 && (
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="text-lg font-semibold mb-4">Smart Investment Recommendations</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
