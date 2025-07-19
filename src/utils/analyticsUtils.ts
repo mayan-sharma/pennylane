@@ -24,15 +24,47 @@ export interface SpendingPersonality {
   score: number;
 }
 
+export interface SeasonalPattern {
+  season: 'Spring' | 'Summer' | 'Fall' | 'Winter';
+  averageSpending: number;
+  peakCategory: string;
+  spendingTrend: 'increasing' | 'decreasing' | 'stable';
+}
+
+export interface SpendingGoal {
+  id: string;
+  category: ExpenseCategory;
+  targetAmount: number;
+  currentAmount: number;
+  period: 'monthly' | 'yearly';
+  progress: number;
+}
+
+export interface PredictiveInsight {
+  type: 'warning' | 'info' | 'success';
+  title: string;
+  description: string;
+  confidence: number;
+  category?: string;
+}
+
 export interface AnalyticsData {
   monthlyTrends: TrendData[];
   yearlyTrends: TrendData[];
+  weeklyTrends: TrendData[];
+  dailyTrends: TrendData[];
   categoryInsights: CategoryInsight[];
   spendingPersonality: SpendingPersonality;
+  seasonalPatterns: SeasonalPattern[];
+  predictiveInsights: PredictiveInsight[];
   totalSpent: number;
   avgMonthlySpending: number;
+  avgWeeklySpending: number;
+  avgDailySpending: number;
   mostExpensiveMonth: string;
   topSpendingDay: string;
+  spendingVariability: number;
+  recurringExpenseRatio: number;
 }
 
 export const getMonthlyTrends = (expenses: Expense[]): TrendData[] => {
@@ -245,15 +277,204 @@ const calculateSpendingVariability = (expenses: Expense[]): number => {
   return mean > 0 ? Math.min(standardDeviation / mean, 1) : 0;
 };
 
+export const getWeeklyTrends = (expenses: Expense[]): TrendData[] => {
+  const weeklyData = new Map<string, { amount: number; count: number }>();
+  
+  expenses.forEach(expense => {
+    const date = new Date(expense.date);
+    const startOfWeek = new Date(date);
+    startOfWeek.setDate(date.getDate() - date.getDay());
+    const weekKey = startOfWeek.toISOString().split('T')[0];
+    
+    if (!weeklyData.has(weekKey)) {
+      weeklyData.set(weekKey, { amount: 0, count: 0 });
+    }
+    
+    const data = weeklyData.get(weekKey)!;
+    data.amount += expense.amount;
+    data.count += 1;
+  });
+  
+  return Array.from(weeklyData.entries())
+    .map(([key, data]) => ({
+      label: new Date(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      amount: data.amount,
+      count: data.count
+    }))
+    .sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime())
+    .slice(-8); // Last 8 weeks
+};
+
+export const getDailyTrends = (expenses: Expense[]): TrendData[] => {
+  const dailyData = new Map<string, { amount: number; count: number }>();
+  
+  expenses.forEach(expense => {
+    const dateKey = expense.date.split('T')[0];
+    
+    if (!dailyData.has(dateKey)) {
+      dailyData.set(dateKey, { amount: 0, count: 0 });
+    }
+    
+    const data = dailyData.get(dateKey)!;
+    data.amount += expense.amount;
+    data.count += 1;
+  });
+  
+  return Array.from(dailyData.entries())
+    .map(([key, data]) => ({
+      label: new Date(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      amount: data.amount,
+      count: data.count
+    }))
+    .sort((a, b) => new Date(a.label).getTime() - new Date(b.label).getTime())
+    .slice(-30); // Last 30 days
+};
+
+export const getSeasonalPatterns = (expenses: Expense[]): SeasonalPattern[] => {
+  const seasonalData = new Map<string, { amount: number; categories: Map<string, number> }>();
+  
+  expenses.forEach(expense => {
+    const date = new Date(expense.date);
+    const month = date.getMonth();
+    let season: 'Spring' | 'Summer' | 'Fall' | 'Winter';
+    
+    if (month >= 2 && month <= 4) season = 'Spring';
+    else if (month >= 5 && month <= 7) season = 'Summer';
+    else if (month >= 8 && month <= 10) season = 'Fall';
+    else season = 'Winter';
+    
+    if (!seasonalData.has(season)) {
+      seasonalData.set(season, { amount: 0, categories: new Map() });
+    }
+    
+    const data = seasonalData.get(season)!;
+    data.amount += expense.amount;
+    data.categories.set(expense.category, (data.categories.get(expense.category) || 0) + expense.amount);
+  });
+  
+  return Array.from(seasonalData.entries()).map(([season, data]) => {
+    const peakCategory = Array.from(data.categories.entries())
+      .reduce((max, [cat, amount]) => amount > max[1] ? [cat, amount] : max, ['', 0])[0];
+    
+    return {
+      season: season as 'Spring' | 'Summer' | 'Fall' | 'Winter',
+      averageSpending: data.amount / 3, // Assuming 3 months per season
+      peakCategory,
+      spendingTrend: 'stable' as const // Would need more complex logic for trend analysis
+    };
+  });
+};
+
+export const generatePredictiveInsights = (expenses: Expense[]): PredictiveInsight[] => {
+  const insights: PredictiveInsight[] = [];
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  
+  // Get current month expenses
+  const currentMonthExpenses = expenses.filter(e => {
+    const date = new Date(e.date);
+    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+  });
+  
+  // Get last month expenses for comparison
+  const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+  const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+  const lastMonthExpenses = expenses.filter(e => {
+    const date = new Date(e.date);
+    return date.getMonth() === lastMonth && date.getFullYear() === lastMonthYear;
+  });
+  
+  const currentMonthTotal = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+  const lastMonthTotal = lastMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
+  
+  // High spending warning
+  if (currentMonthTotal > lastMonthTotal * 1.2) {
+    insights.push({
+      type: 'warning',
+      title: 'Increased Spending Detected',
+      description: `Your spending this month is ${((currentMonthTotal / lastMonthTotal - 1) * 100).toFixed(1)}% higher than last month.`,
+      confidence: 0.85
+    });
+  }
+  
+  // Category-specific insights
+  const categoryTotals = new Map<string, { current: number; last: number }>();
+  
+  currentMonthExpenses.forEach(e => {
+    if (!categoryTotals.has(e.category)) {
+      categoryTotals.set(e.category, { current: 0, last: 0 });
+    }
+    categoryTotals.get(e.category)!.current += e.amount;
+  });
+  
+  lastMonthExpenses.forEach(e => {
+    if (!categoryTotals.has(e.category)) {
+      categoryTotals.set(e.category, { current: 0, last: 0 });
+    }
+    categoryTotals.get(e.category)!.last += e.amount;
+  });
+  
+  categoryTotals.forEach((amounts, category) => {
+    if (amounts.last > 0 && amounts.current > amounts.last * 1.5) {
+      insights.push({
+        type: 'warning',
+        title: `High ${category} Spending`,
+        description: `Your ${category} spending has increased significantly this month.`,
+        confidence: 0.75,
+        category
+      });
+    }
+  });
+  
+  // Positive insights
+  if (currentMonthTotal < lastMonthTotal * 0.8) {
+    insights.push({
+      type: 'success',
+      title: 'Great Spending Control!',
+      description: `You've reduced your spending by ${((1 - currentMonthTotal / lastMonthTotal) * 100).toFixed(1)}% this month.`,
+      confidence: 0.9
+    });
+  }
+  
+  return insights;
+};
+
+export const calculateRecurringExpenseRatio = (expenses: Expense[]): number => {
+  // Simple heuristic: expenses with same amount and category appearing regularly
+  const recurringPatterns = new Map<string, number>();
+  
+  expenses.forEach(expense => {
+    const key = `${expense.category}-${expense.amount}`;
+    recurringPatterns.set(key, (recurringPatterns.get(key) || 0) + 1);
+  });
+  
+  const recurringExpenses = Array.from(recurringPatterns.values())
+    .filter(count => count >= 3).length;
+  
+  return expenses.length > 0 ? recurringExpenses / expenses.length : 0;
+};
+
 export const getAnalyticsData = (expenses: Expense[]): AnalyticsData => {
   const monthlyTrends = getMonthlyTrends(expenses);
   const yearlyTrends = getYearlyTrends(expenses);
+  const weeklyTrends = getWeeklyTrends(expenses);
+  const dailyTrends = getDailyTrends(expenses);
   const categoryInsights = getCategoryInsights(expenses);
   const spendingPersonality = getSpendingPersonality(expenses);
+  const seasonalPatterns = getSeasonalPatterns(expenses);
+  const predictiveInsights = generatePredictiveInsights(expenses);
   
   const totalSpent = expenses.reduce((sum, e) => sum + e.amount, 0);
   const avgMonthlySpending = monthlyTrends.length > 0 
     ? monthlyTrends.reduce((sum, trend) => sum + trend.amount, 0) / monthlyTrends.length 
+    : 0;
+  
+  const avgWeeklySpending = weeklyTrends.length > 0
+    ? weeklyTrends.reduce((sum, trend) => sum + trend.amount, 0) / weeklyTrends.length
+    : 0;
+    
+  const avgDailySpending = dailyTrends.length > 0
+    ? dailyTrends.reduce((sum, trend) => sum + trend.amount, 0) / dailyTrends.length
     : 0;
   
   const mostExpensiveMonth = monthlyTrends.length > 0 
@@ -271,13 +492,22 @@ export const getAnalyticsData = (expenses: Expense[]): AnalyticsData => {
         .reduce((max, [date, amount]) => amount > max[1] ? [date, amount] : max)[0]
     : 'N/A';
   
+  const spendingVariability = calculateSpendingVariability(expenses);
+  const recurringExpenseRatio = calculateRecurringExpenseRatio(expenses);
+  
   return {
     monthlyTrends,
     yearlyTrends,
+    weeklyTrends,
+    dailyTrends,
     categoryInsights,
     spendingPersonality,
+    seasonalPatterns,
+    predictiveInsights,
     totalSpent,
     avgMonthlySpending,
+    avgWeeklySpending,
+    avgDailySpending,
     mostExpensiveMonth,
     topSpendingDay: topSpendingDay !== 'N/A' 
       ? new Date(topSpendingDay).toLocaleDateString('en-US', { 
@@ -286,6 +516,8 @@ export const getAnalyticsData = (expenses: Expense[]): AnalyticsData => {
           month: 'long', 
           day: 'numeric' 
         })
-      : 'N/A'
+      : 'N/A',
+    spendingVariability,
+    recurringExpenseRatio
   };
 };
