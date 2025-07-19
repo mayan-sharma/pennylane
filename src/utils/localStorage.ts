@@ -1,7 +1,9 @@
-import type { Expense, Budget } from '../types/expense';
+import type { Expense, Budget, CustomCategory, BudgetTemplate } from '../types/expense';
 
 const STORAGE_KEY = 'expense-tracker-data';
 const BUDGET_STORAGE_KEY = 'expense-tracker-budgets';
+const CUSTOM_CATEGORIES_KEY = 'expense-tracker-custom-categories';
+const BUDGET_TEMPLATES_KEY = 'expense-tracker-budget-templates';
 
 export const storage = {
   getExpenses: (): Expense[] => {
@@ -49,11 +51,19 @@ export const storage = {
 
   createBackup: (): string => {
     const expenses = storage.getExpenses();
+    const budgets = storage.getBudgets();
+    const customCategories = storage.getCustomCategories();
+    const budgetTemplates = storage.getBudgetTemplates();
+    
     const backup = {
-      version: '1.0',
+      version: '2.0',
       timestamp: new Date().toISOString(),
       expenses,
+      budgets,
+      customCategories,
+      budgetTemplates,
       totalExpenses: expenses.length,
+      totalBudgets: budgets.length,
       totalAmount: expenses.reduce((sum, expense) => sum + expense.amount, 0)
     };
     return JSON.stringify(backup, null, 2);
@@ -145,6 +155,182 @@ export const storage = {
     const budgets = storage.getBudgets();
     const filteredBudgets = budgets.filter(budget => budget.id !== id);
     storage.saveBudgets(filteredBudgets);
+  },
+
+  // Custom Categories management
+  getCustomCategories: (): CustomCategory[] => {
+    try {
+      const data = localStorage.getItem(CUSTOM_CATEGORIES_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (error) {
+      console.error('Error reading custom categories from localStorage:', error);
+      return [];
+    }
+  },
+
+  saveCustomCategories: (categories: CustomCategory[]): void => {
+    try {
+      localStorage.setItem(CUSTOM_CATEGORIES_KEY, JSON.stringify(categories));
+    } catch (error) {
+      console.error('Error saving custom categories to localStorage:', error);
+    }
+  },
+
+  addCustomCategory: (category: CustomCategory): void => {
+    const categories = storage.getCustomCategories();
+    categories.push(category);
+    storage.saveCustomCategories(categories);
+  },
+
+  deleteCustomCategory: (id: string): void => {
+    const categories = storage.getCustomCategories();
+    const filteredCategories = categories.filter(cat => cat.id !== id);
+    storage.saveCustomCategories(filteredCategories);
+  },
+
+  // Budget Templates management
+  getBudgetTemplates: (): BudgetTemplate[] => {
+    try {
+      const data = localStorage.getItem(BUDGET_TEMPLATES_KEY);
+      return data ? JSON.parse(data) : storage.getDefaultTemplates();
+    } catch (error) {
+      console.error('Error reading budget templates from localStorage:', error);
+      return storage.getDefaultTemplates();
+    }
+  },
+
+  saveBudgetTemplates: (templates: BudgetTemplate[]): void => {
+    try {
+      localStorage.setItem(BUDGET_TEMPLATES_KEY, JSON.stringify(templates));
+    } catch (error) {
+      console.error('Error saving budget templates to localStorage:', error);
+    }
+  },
+
+  addBudgetTemplate: (template: BudgetTemplate): void => {
+    const templates = storage.getBudgetTemplates();
+    templates.push(template);
+    storage.saveBudgetTemplates(templates);
+  },
+
+  deleteBudgetTemplate: (id: string): void => {
+    const templates = storage.getBudgetTemplates();
+    const filteredTemplates = templates.filter(template => template.id !== id);
+    storage.saveBudgetTemplates(filteredTemplates);
+  },
+
+  getDefaultTemplates: (): BudgetTemplate[] => {
+    return [
+      {
+        id: 'student-template',
+        name: 'Student Budget',
+        description: 'Basic budget template for students',
+        category: 'student',
+        budgets: [
+          {
+            category: 'Food',
+            amount: 8000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          },
+          {
+            category: 'Transport',
+            amount: 2000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          },
+          {
+            category: 'Entertainment',
+            amount: 3000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: true
+          }
+        ]
+      },
+      {
+        id: 'family-template',
+        name: 'Family Budget',
+        description: 'Comprehensive budget for families',
+        category: 'family',
+        budgets: [
+          {
+            category: 'Food',
+            amount: 20000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          },
+          {
+            category: 'Bills',
+            amount: 15000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          },
+          {
+            category: 'Healthcare',
+            amount: 8000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: true
+          },
+          {
+            category: 'Education',
+            amount: 10000,
+            period: 'monthly',
+            type: 'savings',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: true
+          }
+        ]
+      },
+      {
+        id: 'professional-template',
+        name: 'Professional Budget',
+        description: 'Budget template for working professionals',
+        category: 'professional',
+        budgets: [
+          {
+            category: 'total',
+            amount: 50000,
+            period: 'monthly',
+            type: 'auto-adjusting',
+            alertThresholds: [80, 95, 100],
+            rolloverEnabled: false,
+            autoAdjustSettings: {
+              enabled: true,
+              baselineMonths: 3,
+              adjustmentFactor: 0.1
+            }
+          },
+          {
+            category: 'Food',
+            amount: 15000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          },
+          {
+            category: 'Transport',
+            amount: 8000,
+            period: 'monthly',
+            type: 'standard',
+            alertThresholds: [75, 90, 100],
+            rolloverEnabled: false
+          }
+        ]
+      }
+    ];
   }
 };
 

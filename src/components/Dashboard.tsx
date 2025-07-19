@@ -6,16 +6,18 @@ interface DashboardProps {
   stats: ExpenseStats;
   recentExpenses: Expense[];
   budgetStatuses?: BudgetStatus[];
-  budgetAlerts?: string[];
   onAddExpense: () => void;
+  onDismissAlert?: (alertId: string) => void;
+  onSnoozeAlert?: (alertId: string, hours: number) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   stats,
   recentExpenses,
   budgetStatuses = [],
-  budgetAlerts = [],
-  onAddExpense
+  onAddExpense,
+  onDismissAlert,
+  onSnoozeAlert
 }) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -61,7 +63,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </button>
       </div>
 
-      <BudgetAlerts alerts={budgetAlerts} />
+      <BudgetAlerts 
+        budgetStatuses={budgetStatuses}
+        onDismiss={onDismissAlert}
+        onSnooze={onSnoozeAlert}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border">

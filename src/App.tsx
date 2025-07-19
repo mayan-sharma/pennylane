@@ -29,12 +29,19 @@ function App() {
   } = useExpenses();
 
   const {
+    budgets,
+    customCategories,
+    budgetTemplates,
     loading: budgetsLoading,
     addBudget,
     updateBudget,
     deleteBudget,
     getAllBudgetStatuses,
-    getActiveAlerts,
+    getBudgetAnalytics,
+    addCustomCategory,
+    addBudgetTemplate,
+    applyBudgetTemplate,
+    exportBudgetData
   } = useBudgets(expenses);
 
   const handleAddExpense = () => {
@@ -99,8 +106,9 @@ function App() {
               stats={getExpenseStats()}
               recentExpenses={getRecentExpenses()}
               budgetStatuses={getAllBudgetStatuses()}
-              budgetAlerts={getActiveAlerts()}
               onAddExpense={handleAddExpense}
+              onDismissAlert={(alertId) => console.log('Dismiss alert:', alertId)}
+              onSnoozeAlert={(alertId, hours) => console.log('Snooze alert:', alertId, 'for', hours, 'hours')}
             />
           )}
         </ErrorBoundary>
@@ -119,9 +127,31 @@ function App() {
           {activeTab === 'budgets' && (
             <BudgetManagement
               budgetStatuses={getAllBudgetStatuses()}
+              budgetTemplates={budgetTemplates}
+              customCategories={customCategories}
+              analytics={getBudgetAnalytics()}
+              expenses={expenses}
               onAddBudget={addBudget}
               onUpdateBudget={updateBudget}
               onDeleteBudget={deleteBudget}
+              onApplyTemplate={applyBudgetTemplate}
+              onCreateTemplate={addBudgetTemplate}
+              onAddCustomCategory={addCustomCategory}
+              onExportData={exportBudgetData}
+              onBulkOperation={(operation, budgetIds, adjustment) => {
+                if (operation === 'delete') {
+                  budgetIds.forEach(id => deleteBudget(id));
+                } else if (operation === 'adjust' && adjustment) {
+                  budgetIds.forEach(id => {
+                    const budget = budgets.find(b => b.id === id);
+                    if (budget) {
+                      updateBudget(id, {
+                        amount: budget.amount * (1 + adjustment / 100)
+                      });
+                    }
+                  });
+                }
+              }}
             />
           )}
         </ErrorBoundary>
