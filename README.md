@@ -1,10 +1,11 @@
-# Expense Tracker
+# Penny Lane
 
 A modern expense tracking web application built with React, TypeScript, and Tailwind CSS.
 
 ## Features
 
 ### Core Features ✅
+
 - **Add/Edit/Delete Expenses**: Complete CRUD operations for expense management
 - **Expense Categorization**: Organize expenses into predefined categories (Food, Transport, Bills, Entertainment, etc.)
 - **Dashboard Overview**: View total expenses, monthly/weekly totals, and recent transactions
@@ -12,8 +13,9 @@ A modern expense tracking web application built with React, TypeScript, and Tail
 - **Local Storage**: All data persists locally in your browser
 
 ### Categories
+
 - Food
-- Transport  
+- Transport
 - Bills
 - Entertainment
 - Shopping
@@ -24,6 +26,7 @@ A modern expense tracking web application built with React, TypeScript, and Tail
 - Other
 
 ### Dashboard Statistics
+
 - Total expenses across all time
 - This month's spending
 - This week's spending
@@ -43,23 +46,27 @@ A modern expense tracking web application built with React, TypeScript, and Tail
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v18 or higher)
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository
+
 ```bash
 git clone <repository-url>
 cd expense-tracker
 ```
 
 2. Install dependencies
+
 ```bash
 npm install
 ```
 
 3. Start the development server
+
 ```bash
 npm run dev
 ```

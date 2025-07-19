@@ -18,7 +18,7 @@ export const Layout: React.FC<LayoutProps> = ({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                <h1 className="text-xl font-bold text-gray-900">Expense Tracker</h1>
+                <h1 className="text-xl font-bold text-gray-900">Penny Lane</h1>
               </div>
               <div className="ml-10 flex items-baseline space-x-4">
                 <button
