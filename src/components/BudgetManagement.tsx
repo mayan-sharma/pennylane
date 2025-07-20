@@ -3,7 +3,16 @@ import { ExpenseCategory, type Budget, type BudgetFormData, type BudgetStatus, t
 import { BudgetAnalytics } from './BudgetAnalytics';
 import { BudgetTemplates } from './BudgetTemplates';
 import { BudgetCalendar } from './BudgetCalendar';
-import type { BudgetAnalytics as BudgetAnalyticsType, Expense } from '../types/expense';
+import { DebtPayoffTracker } from './DebtPayoffTracker';
+import { InvestmentGoals } from './InvestmentGoals';
+import { AchievementSystem } from './AchievementSystem';
+import { FamilyBudgetSharing } from './FamilyBudgetSharing';
+import { AccountabilityPartners } from './AccountabilityPartners';
+import { SmartSuggestions } from './SmartSuggestions';
+import { SeasonalBudgets } from './SeasonalBudgets';
+import { BudgetScenarioPlanning } from './BudgetScenarioPlanning';
+import { BudgetChallenges } from './BudgetChallenges';
+import type { BudgetAnalytics as BudgetAnalyticsType, Expense, DebtPayoffGoal, InvestmentGoal, Achievement, UserProgress, FamilyBudget, AccountabilityPartner, SmartSuggestion, SeasonalAdjustment, BudgetScenario, BudgetChallenge, PartnerCheckIn } from '../types/expense';
 
 interface BudgetManagementProps {
   budgetStatuses: BudgetStatus[];
@@ -35,7 +44,7 @@ export const BudgetManagement: React.FC<BudgetManagementProps> = ({
   onExportData,
   onBulkOperation
 }) => {
-  const [activeTab, setActiveTab] = useState<'budgets' | 'analytics' | 'templates' | 'calendar'>('budgets');
+  const [activeTab, setActiveTab] = useState<'budgets' | 'analytics' | 'templates' | 'calendar' | 'debt' | 'investments' | 'achievements' | 'family' | 'partners' | 'suggestions' | 'seasonal' | 'scenarios' | 'challenges'>('budgets');
   const [showForm, setShowForm] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [selectedBudgets, setSelectedBudgets] = useState<Set<string>>(new Set());
@@ -192,6 +201,104 @@ export const BudgetManagement: React.FC<BudgetManagementProps> = ({
           <BudgetCalendar
             budgetStatuses={budgetStatuses}
             expenses={expenses}
+          />
+        );
+      case 'debt':
+        return (
+          <DebtPayoffTracker
+            goals={[]}
+            onCreateGoal={() => {}}
+            onUpdateGoal={() => {}}
+            onDeleteGoal={() => {}}
+          />
+        );
+      case 'investments':
+        return (
+          <InvestmentGoals
+            goals={[]}
+            onCreateGoal={() => {}}
+            onUpdateGoal={() => {}}
+            onDeleteGoal={() => {}}
+          />
+        );
+      case 'achievements':
+        return (
+          <AchievementSystem
+            achievements={[]}
+            userProgress={{
+              totalPoints: 0,
+              level: 1,
+              streaks: {},
+              completedAchievements: [],
+              nextLevelPoints: 100
+            }}
+            onClaimReward={() => {}}
+          />
+        );
+      case 'family':
+        return (
+          <FamilyBudgetSharing
+            familyBudgets={[]}
+            currentUserId="user-1"
+            onCreateFamily={() => {}}
+            onInviteMember={() => {}}
+            onUpdatePermissions={() => {}}
+            onLeaveFamily={() => {}}
+          />
+        );
+      case 'partners':
+        return (
+          <AccountabilityPartners
+            partners={[]}
+            checkIns={[]}
+            currentUserId="user-1"
+            onAddPartner={() => {}}
+            onRemovePartner={() => {}}
+            onSubmitCheckIn={() => {}}
+            onUpdateGoal={() => {}}
+          />
+        );
+      case 'suggestions':
+        return (
+          <SmartSuggestions
+            suggestions={[]}
+            onAcceptSuggestion={() => {}}
+            onDismissSuggestion={() => {}}
+            onRefreshSuggestions={() => {}}
+          />
+        );
+      case 'seasonal':
+        return (
+          <SeasonalBudgets
+            seasonalAdjustments={[]}
+            budgets={budgetStatuses.map(status => status.budget)}
+            onCreateAdjustment={() => {}}
+            onUpdateAdjustment={() => {}}
+            onDeleteAdjustment={() => {}}
+            onApplyAdjustment={() => {}}
+          />
+        );
+      case 'scenarios':
+        return (
+          <BudgetScenarioPlanning
+            scenarios={[]}
+            budgets={budgetStatuses.map(status => status.budget)}
+            onCreateScenario={() => {}}
+            onUpdateScenario={() => {}}
+            onDeleteScenario={() => {}}
+            onCalculateScenario={() => {}}
+          />
+        );
+      case 'challenges':
+        return (
+          <BudgetChallenges
+            challenges={[]}
+            currentUserId="user-1"
+            currentUsername="User"
+            onCreateChallenge={() => {}}
+            onJoinChallenge={() => {}}
+            onLeaveChallenge={() => {}}
+            onUpdateProgress={() => {}}
           />
         );
       default:
@@ -378,17 +485,26 @@ export const BudgetManagement: React.FC<BudgetManagementProps> = ({
       </div>
 
       <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
+        <nav className="-mb-px flex space-x-4 overflow-x-auto">
           {[
             { id: 'budgets', label: 'Budgets' },
             { id: 'analytics', label: 'Analytics' },
             { id: 'templates', label: 'Templates' },
-            { id: 'calendar', label: 'Calendar' }
+            { id: 'calendar', label: 'Calendar' },
+            { id: 'debt', label: 'Debt Tracker' },
+            { id: 'investments', label: 'Investments' },
+            { id: 'achievements', label: 'Achievements' },
+            { id: 'family', label: 'Family' },
+            { id: 'partners', label: 'Partners' },
+            { id: 'suggestions', label: 'Suggestions' },
+            { id: 'seasonal', label: 'Seasonal' },
+            { id: 'scenarios', label: 'Scenarios' },
+            { id: 'challenges', label: 'Challenges' }
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              className={`py-2 px-3 border-b-2 font-medium text-sm whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-blue-500 text-blue-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
