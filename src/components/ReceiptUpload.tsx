@@ -1,21 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { type Receipt } from '../types/expense';
+import { ocrService } from '../services/ocrService';
 
 interface ReceiptUploadProps {
   expenseId: string;
   existingReceipts?: Receipt[];
   onReceiptAdd: (expenseId: string, receipt: Omit<Receipt, 'id' | 'uploadDate'>) => void;
   onReceiptRemove?: (expenseId: string, receiptId: string) => void;
+  onDataExtracted?: (extractedData: Receipt['extractedData']) => void;
 }
 
 export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
   expenseId,
   existingReceipts = [],
   onReceiptAdd,
-  onReceiptRemove
+  onReceiptRemove,
+  onDataExtracted
 }) => {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>('');
+  const [availableProviders] = useState(() => ocrService.getAvailableProviders());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (files: FileList) => {
@@ -40,8 +45,14 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         // Create object URL for preview
         const url = URL.createObjectURL(file);
         
-        // Extract text from image (mock OCR - in real app would use OCR service)
-        const extractedData = await mockOCRExtraction(file);
+        // Extract data using enhanced OCR service
+        setProcessingStatus(`Processing ${file.name} with OCR...`);
+        const extractedData = await ocrService.extractReceiptData(file);
+        
+        // Notify parent component of extracted data for auto-filling
+        if (onDataExtracted && extractedData && Object.keys(extractedData).length > 0) {
+          onDataExtracted(extractedData);
+        }
         
         const receipt: Omit<Receipt, 'id' | 'uploadDate'> = {
           filename: file.name,
@@ -54,36 +65,25 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         onReceiptAdd(expenseId, receipt);
       } catch (error) {
         console.error('Error processing receipt:', error);
-        alert(`Error processing ${file.name}`);
+        setProcessingStatus(`Failed to process ${file.name}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        
+        // Still add the receipt without extracted data
+        const url = URL.createObjectURL(file);
+        const receipt: Omit<Receipt, 'id' | 'uploadDate'> = {
+          filename: file.name,
+          url,
+          size: file.size,
+          type: file.type,
+          extractedData: undefined,
+        };
+        onReceiptAdd(expenseId, receipt);
       }
     }
     
     setUploading(false);
+    setProcessingStatus('');
   };
 
-  // Mock OCR extraction - in real app would use OCR service like Tesseract.js or cloud service
-  const mockOCRExtraction = async (file: File): Promise<Receipt['extractedData']> => {
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Mock extracted data based on filename patterns
-    const filename = file.name.toLowerCase();
-    let mockData: Receipt['extractedData'] = {};
-    
-    if (filename.includes('receipt') || filename.includes('bill')) {
-      mockData = {
-        amount: Math.random() * 1000 + 100, // Random amount between 100-1100
-        merchant: filename.includes('starbucks') ? 'Starbucks' : 
-                 filename.includes('amazon') ? 'Amazon' :
-                 filename.includes('grocery') ? 'Grocery Store' :
-                 'Unknown Merchant',
-        date: new Date().toISOString().split('T')[0],
-        items: ['Item 1', 'Item 2', 'Tax']
-      };
-    }
-    
-    return mockData;
-  };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -138,7 +138,14 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         {uploading ? (
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            <p className="mt-2 text-sm text-gray-600">Processing receipts...</p>
+            <p className="mt-2 text-sm text-gray-600">
+              {processingStatus || 'Processing receipts...'}
+            </p>
+            {availableProviders.length > 0 && (
+              <p className="mt-1 text-xs text-gray-500">
+                Using: {availableProviders.join(', ')}
+              </p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center">
@@ -226,18 +233,49 @@ export const ReceiptUpload: React.FC<ReceiptUploadProps> = ({
         </div>
       )}
 
-      {/* OCR Enhancement Notice */}
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+      {/* Enhanced OCR Info */}
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-md p-4">
         <div className="flex items-start">
-          <svg className="w-5 h-5 text-blue-400 mt-0.5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg className="w-5 h-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
           </svg>
-          <div>
-            <h5 className="text-sm font-medium text-blue-800">Smart Receipt Processing</h5>
+          <div className="flex-grow">
+            <h5 className="text-sm font-medium text-blue-800">Advanced Receipt Scanning</h5>
             <p className="text-sm text-blue-700 mt-1">
-              We automatically extract amount, merchant, and date information from your receipt images 
-              to help you fill expense details faster.
+              AI-powered OCR automatically extracts amount, merchant, date, and line items from your receipts.
+              {availableProviders.length > 0 && (
+                <span className="block mt-1">
+                  Available providers: <span className="font-medium">{availableProviders.join(', ')}</span>
+                </span>
+              )}
             </p>
+            
+            <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+              <div className="flex items-center text-green-600">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Smart amount detection
+              </div>
+              <div className="flex items-center text-green-600">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Merchant recognition
+              </div>
+              <div className="flex items-center text-green-600">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Date extraction
+              </div>
+              <div className="flex items-center text-green-600">
+                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                Line item breakdown
+              </div>
+            </div>
           </div>
         </div>
       </div>

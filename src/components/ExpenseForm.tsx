@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ExpenseCategory, type ExpenseFormData, type Expense, type Receipt, type ExpenseTemplate, type Currency } from '../types/expense';
 import { ReceiptUpload } from './ReceiptUpload';
+import { categorizationService, type CategoryPrediction } from '../services/categorizationService';
 
 interface ExpenseFormProps {
   onSubmit: (data: ExtendedExpenseFormData) => void;
@@ -49,6 +50,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const [showTemplates, setShowTemplates] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [categoryPrediction, setCategoryPrediction] = useState<CategoryPrediction | null>(null);
+  const [showCategoryHelp, setShowCategoryHelp] = useState(false);
 
   const allCategories = [...Object.values(ExpenseCategory), ...customCategories];
 
@@ -120,6 +123,12 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
         [name]: undefined
       }));
     }
+
+    // Trigger category prediction when relevant fields change
+    if ((name === 'merchant' || name === 'description' || name === 'amount') && !isEditing) {
+      // Debounce the prediction call
+      setTimeout(predictCategory, 500);
+    }
   };
 
   const handleTemplateSelect = (template: ExpenseTemplate) => {
@@ -171,6 +180,66 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
       ...prev,
       receipts: [...(prev.receipts || []), newReceipt]
     }));
+  };
+
+  const handleOCRDataExtracted = (extractedData: Receipt['extractedData']) => {
+    if (!extractedData) return;
+    
+    // Auto-fill form with extracted data (only if fields are empty)
+    setFormData(prev => ({
+      ...prev,
+      amount: prev.amount || (extractedData.amount ? extractedData.amount.toString() : ''),
+      merchant: prev.merchant || extractedData.merchant || '',
+      date: prev.date || extractedData.date || prev.date,
+      description: prev.description || (extractedData.merchant ? `Purchase at ${extractedData.merchant}` : ''),
+    }));
+
+    // Show confirmation toast (you could add a toast notification here)
+    console.log('Auto-filled form with OCR data:', extractedData);
+    
+    // Trigger categorization prediction after auto-fill
+    if (extractedData.merchant || extractedData.amount) {
+      predictCategory();
+    }
+  };
+
+  const predictCategory = async () => {
+    // Only predict if we have enough data and no category is set
+    if ((!formData.merchant && !formData.description) || formData.category !== ExpenseCategory.OTHER) {
+      return;
+    }
+
+    try {
+      const prediction = await categorizationService.categorizeExpense({
+        merchant: formData.merchant,
+        description: formData.description,
+        amount: parseFloat(formData.amount) || 0,
+        date: formData.date,
+      });
+
+      if (prediction.confidence > 0.6) { // Only show high-confidence predictions
+        setCategoryPrediction(prediction);
+        setShowCategoryHelp(true);
+      }
+    } catch (error) {
+      console.error('Category prediction failed:', error);
+    }
+  };
+
+  const applyCategoryPrediction = () => {
+    if (categoryPrediction) {
+      setFormData(prev => ({
+        ...prev,
+        category: categoryPrediction.category,
+      }));
+      setCategoryPrediction(null);
+      setShowCategoryHelp(false);
+    }
+  };
+
+  const dismissCategoryPrediction = () => {
+    setCategoryPrediction(null);
+    setShowCategoryHelp(false);
   };
 
   const popularTemplates = templates
@@ -299,6 +368,15 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
               <div>
                 <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
                   Category *
+                  {categoryPrediction && (
+                    <button
+                      type="button"
+                      onClick={() => setShowCategoryHelp(!showCategoryHelp)}
+                      className="ml-2 text-blue-600 hover:text-blue-800 text-xs"
+                    >
+                      🤖 AI Suggestion
+                    </button>
+                  )}
                 </label>
                 <select
                   id="category"
@@ -314,6 +392,45 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     </option>
                   ))}
                 </select>
+                
+                {/* Smart Category Suggestion */}
+                {showCategoryHelp && categoryPrediction && (
+                  <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <span className="text-sm font-medium text-blue-800">
+                            AI suggests: <span className="font-bold">{categoryPrediction.category}</span>
+                          </span>
+                          <span className="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">
+                            {Math.round(categoryPrediction.confidence * 100)}% confident
+                          </span>
+                        </div>
+                        <div className="text-xs text-blue-700 space-y-1">
+                          {categoryPrediction.reasoning.map((reason, index) => (
+                            <div key={index}>• {reason}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex space-x-2 ml-3">
+                        <button
+                          type="button"
+                          onClick={applyCategoryPrediction}
+                          className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                          Apply
+                        </button>
+                        <button
+                          type="button"
+                          onClick={dismissCategoryPrediction}
+                          className="px-3 py-1 text-xs bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -443,6 +560,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                     expenseId={initialData?.id || 'new'}
                     existingReceipts={formData.receipts}
                     onReceiptAdd={handleReceiptAdd}
+                    onDataExtracted={handleOCRDataExtracted}
                   />
                 </div>
               </>
