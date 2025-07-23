@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import type { Expense, Budget, CustomCategory, BudgetTemplate } from '../types/expense';
 
 const STORAGE_KEY = 'expense-tracker-data';
@@ -334,21 +335,320 @@ export const storage = {
   }
 };
 
-// Generic storage utilities for tax data
-export const getStorageData = <T>(key: string, defaultValue: T): T => {
+// Enhanced storage utilities with advanced features
+export interface StorageOptions {
+  compress?: boolean;
+  encrypt?: boolean;
+  ttl?: number; // Time to live in milliseconds
+  version?: string;
+  syncAcrossTabs?: boolean;
+}
+
+export interface StorageData<T> {
+  value: T;
+  timestamp: number;
+  ttl?: number;
+  version?: string;
+  compressed?: boolean;
+  encrypted?: boolean;
+}
+
+// Simple compression using JSON stringification optimization
+const compress = (data: string): string => {
+  // Simple LZ-style compression for JSON data
+  const dict: Record<string, string> = {};
+  let result = data;
+  const commonPatterns = ['"', ':', '{', '}', '[', ']', ',', 'true', 'false', 'null'];
+  
+  commonPatterns.forEach((pattern, index) => {
+    const token = String.fromCharCode(256 + index);
+    dict[token] = pattern;
+    result = result.split(pattern).join(token);
+  });
+  
+  return JSON.stringify({ compressed: result, dict });
+};
+
+const decompress = (compressed: string): string => {
   try {
-    const data = localStorage.getItem(key);
-    return data ? JSON.parse(data) : defaultValue;
+    const { compressed: data, dict } = JSON.parse(compressed);
+    let result = data;
+    Object.entries(dict).forEach(([token, pattern]) => {
+      result = result.split(token).join(pattern);
+    });
+    return result;
+  } catch {
+    return compressed; // Fallback if not compressed
+  }
+};
+
+// Simple encryption (for demo - use proper encryption in production)
+const encrypt = (data: string): string => {
+  return btoa(data); // Base64 encoding (use proper encryption in production)
+};
+
+const decrypt = (encrypted: string): string => {
+  try {
+    return atob(encrypted);
+  } catch {
+    return encrypted; // Fallback if not encrypted
+  }
+};
+
+export const getStorageData = <T>(key: string, defaultValue: T, options?: StorageOptions): T => {
+  try {
+    const rawData = localStorage.getItem(key);
+    if (!rawData) return defaultValue;
+
+    let data = rawData;
+    
+    // Try to parse as enhanced storage data first
+    try {
+      const parsedData: StorageData<T> = JSON.parse(rawData);
+      
+      // Check TTL
+      if (parsedData.ttl && Date.now() - parsedData.timestamp > parsedData.ttl) {
+        localStorage.removeItem(key);
+        return defaultValue;
+      }
+      
+      // Check version compatibility
+      if (options?.version && parsedData.version && parsedData.version !== options.version) {
+        console.warn(`Version mismatch for ${key}. Expected: ${options.version}, Found: ${parsedData.version}`);
+        localStorage.removeItem(key);
+        return defaultValue;
+      }
+      
+      let value = JSON.stringify(parsedData.value);
+      
+      // Decrypt if needed
+      if (parsedData.encrypted) {
+        value = decrypt(value);
+      }
+      
+      // Decompress if needed
+      if (parsedData.compressed) {
+        value = decompress(value);
+      }
+      
+      return JSON.parse(value);
+    } catch {
+      // Fallback to simple parsing for backward compatibility
+      return JSON.parse(rawData);
+    }
   } catch (error) {
     console.error(`Error reading ${key} from localStorage:`, error);
     return defaultValue;
   }
 };
 
-export const setStorageData = <T>(key: string, value: T): void => {
+export const setStorageData = <T>(key: string, value: T, options?: StorageOptions): void => {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    let data = JSON.stringify(value);
+    
+    // Compress if requested
+    if (options?.compress) {
+      data = compress(data);
+    }
+    
+    // Encrypt if requested
+    if (options?.encrypt) {
+      data = encrypt(data);
+    }
+    
+    const storageData: StorageData<T> = {
+      value: options?.compress || options?.encrypt ? JSON.parse(data) : value,
+      timestamp: Date.now(),
+      ...(options?.ttl && { ttl: options.ttl }),
+      ...(options?.version && { version: options.version }),
+      ...(options?.compress && { compressed: true }),
+      ...(options?.encrypt && { encrypted: true })
+    };
+    
+    const finalData = JSON.stringify(storageData);
+    localStorage.setItem(key, finalData);
+    
+    // Sync across tabs if requested
+    if (options?.syncAcrossTabs) {
+      window.dispatchEvent(new CustomEvent('localStorage-update', {
+        detail: { key, value: storageData }
+      }));
+    }
   } catch (error) {
     console.error(`Error saving ${key} to localStorage:`, error);
   }
+};
+
+// Advanced storage utilities
+export const removeStorageData = (key: string): void => {
+  localStorage.removeItem(key);
+  window.dispatchEvent(new CustomEvent('localStorage-remove', { detail: { key } }));
+};
+
+export const clearAllStorageData = (): void => {
+  localStorage.clear();
+  window.dispatchEvent(new CustomEvent('localStorage-clear'));
+};
+
+export const getStorageInfo = () => {
+  const info = {
+    totalSize: 0,
+    itemCount: Object.keys(localStorage).length,
+    items: {} as Record<string, { size: number; lastModified?: number }>
+  };
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key) {
+      const value = localStorage.getItem(key);
+      const size = new Blob([value || '']).size;
+      info.totalSize += size;
+      
+      try {
+        const parsed: StorageData<any> = JSON.parse(value || '{}');
+        info.items[key] = {
+          size,
+          lastModified: parsed.timestamp
+        };
+      } catch {
+        info.items[key] = { size };
+      }
+    }
+  }
+  
+  return info;
+};
+
+export const cleanupExpiredData = (): number => {
+  let cleanedCount = 0;
+  const keys = Object.keys(localStorage);
+  
+  keys.forEach(key => {
+    try {
+      const data = localStorage.getItem(key);
+      if (data) {
+        const parsed: StorageData<any> = JSON.parse(data);
+        if (parsed.ttl && Date.now() - parsed.timestamp > parsed.ttl) {
+          localStorage.removeItem(key);
+          cleanedCount++;
+        }
+      }
+    } catch {
+      // Ignore parsing errors for non-enhanced storage items
+    }
+  });
+  
+  return cleanedCount;
+};
+
+// Storage quota management
+export const getStorageQuota = async (): Promise<{ used: number; total: number; available: number }> => {
+  if ('storage' in navigator && 'estimate' in navigator.storage) {
+    const estimate = await navigator.storage.estimate();
+    return {
+      used: estimate.usage || 0,
+      total: estimate.quota || 0,
+      available: (estimate.quota || 0) - (estimate.usage || 0)
+    };
+  }
+  
+  // Fallback estimation
+  const used = new Blob(Object.values(localStorage)).size;
+  return {
+    used,
+    total: 5 * 1024 * 1024, // Assume 5MB default
+    available: (5 * 1024 * 1024) - used
+  };
+};
+
+// Backup and restore utilities
+export const createFullBackup = (): string => {
+  const backup = {
+    version: '3.0',
+    timestamp: new Date().toISOString(),
+    data: {} as Record<string, any>
+  };
+  
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key) {
+      backup.data[key] = localStorage.getItem(key);
+    }
+  }
+  
+  return JSON.stringify(backup, null, 2);
+};
+
+export const restoreFromFullBackup = (backupData: string): { success: boolean; message: string; restored: number } => {
+  try {
+    const backup = JSON.parse(backupData);
+    
+    if (!backup.version || !backup.data) {
+      return { success: false, message: 'Invalid backup format', restored: 0 };
+    }
+    
+    let restored = 0;
+    Object.entries(backup.data).forEach(([key, value]) => {
+      localStorage.setItem(key, value as string);
+      restored++;
+    });
+    
+    return {
+      success: true,
+      message: `Successfully restored ${restored} items from backup`,
+      restored
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to restore backup: ${error}`,
+      restored: 0
+    };
+  }
+};
+
+// Enhanced storage hooks for React
+export const useStorageSync = (key: string) => {
+  const [data, setData] = useState<any>(null);
+  
+  useEffect(() => {
+    const handleUpdate = (event: CustomEvent) => {
+      if (event.detail.key === key) {
+        setData(event.detail.value);
+      }
+    };
+    
+    const handleRemove = (event: CustomEvent) => {
+      if (event.detail.key === key) {
+        setData(null);
+      }
+    };
+    
+    const handleClear = () => {
+      setData(null);
+    };
+    
+    window.addEventListener('localStorage-update', handleUpdate as EventListener);
+    window.addEventListener('localStorage-remove', handleRemove as EventListener);
+    window.addEventListener('localStorage-clear', handleClear);
+    
+    // Initial load
+    const initialData = localStorage.getItem(key);
+    if (initialData) {
+      try {
+        const parsed: StorageData<any> = JSON.parse(initialData);
+        setData(parsed);
+      } catch {
+        setData(null);
+      }
+    }
+    
+    return () => {
+      window.removeEventListener('localStorage-update', handleUpdate as EventListener);
+      window.removeEventListener('localStorage-remove', handleRemove as EventListener);
+      window.removeEventListener('localStorage-clear', handleClear);
+    };
+  }, [key]);
+  
+  return data;
 };

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ExpenseList } from './components/ExpenseList';
@@ -8,14 +8,26 @@ import { BackupRestore } from './components/BackupRestore';
 import { BudgetManagement } from './components/BudgetManagement';
 import { SmartAnalytics } from './components/SmartAnalytics';
 import { TaxManagement } from './components/TaxManagement';
+import { AdvancedSettings } from './components/AdvancedSettings';
 import { useExpenses } from './hooks/useExpenses';
 import { useBudgets } from './hooks/useBudgets';
+import { AppSettingsProvider, useAppSettings } from './hooks/useAppSettings';
+import { usePersistentState, useSessionState } from './hooks/usePersistentState';
+import { stateManager } from './utils/stateManager';
 import type { ExpenseFormData, Expense } from './types/expense';
 
-function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'expenses' | 'budgets' | 'analytics' | 'taxes' | 'settings'>('dashboard');
-  const [showForm, setShowForm] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+// Internal App component that uses settings
+function AppContent() {
+  const { settings } = useAppSettings();
+  
+  // Use persistent state for UI state
+  const [activeTab, setActiveTab] = usePersistentState('active-tab', settings.defaultTab, {
+    syncAcrossTabs: true
+  });
+  
+  // Use session state for temporary form state
+  const [showForm, setShowForm] = useSessionState('show-form', false);
+  const [editingExpense, setEditingExpense] = useSessionState<Expense | null>('editing-expense', null);
   
   const {
     expenses,
@@ -81,10 +93,32 @@ function App() {
   };
 
   const handleDeleteExpense = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this expense?')) {
+    const confirmDelete = settings.requireConfirmation ? 
+      window.confirm('Are you sure you want to delete this expense?') : true;
+    
+    if (confirmDelete) {
       deleteExpense(id);
     }
   };
+
+  // Initialize state manager and cleanup
+  useEffect(() => {
+    // Create initial snapshot
+    stateManager.createSnapshot('app-start');
+    
+    // Cleanup expired data on app start
+    const cleanedItems = stateManager.cleanup();
+    if (cleanedItems > 0) {
+      console.log(`Cleaned up ${cleanedItems} expired items`);
+    }
+    
+    // Optimize storage if needed
+    stateManager.optimizeStorage().then(result => {
+      if (result.itemsCompressed > 0 || result.itemsRemoved > 0) {
+        console.log('Storage optimized:', result);
+      }
+    });
+  }, []);
 
   if (loading || budgetsLoading) {
     return (
@@ -105,6 +139,7 @@ function App() {
             <Dashboard
               stats={getExpenseStats()}
               recentExpenses={getRecentExpenses()}
+              allExpenses={expenses}
               budgetStatuses={getAllBudgetStatuses()}
               onAddExpense={handleAddExpense}
               onDismissAlert={(alertId) => console.log('Dismiss alert:', alertId)}
@@ -168,6 +203,7 @@ function App() {
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+              <AdvancedSettings />
               <BackupRestore onRestore={loadExpenses} />
             </div>
           )}
@@ -185,6 +221,15 @@ function App() {
         </ErrorBoundary>
       </Layout>
     </ErrorBoundary>
+  );
+}
+
+// Main App component with settings provider
+function App() {
+  return (
+    <AppSettingsProvider>
+      <AppContent />
+    </AppSettingsProvider>
   );
 }
 

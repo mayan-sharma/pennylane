@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ExpenseCategory, type Expense, type ExpenseFilters, type ExpenseStats } from '../types/expense';
 import { storage } from '../utils/localStorage';
+import { stateManager } from '../utils/stateManager';
 
 export const useExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -27,6 +28,9 @@ export const useExpenses = () => {
 
     storage.addExpense(newExpense);
     setExpenses(prev => [...prev, newExpense]);
+    
+    // Create a snapshot after adding expense for undo functionality
+    stateManager.createSnapshot(`expense-added-${newExpense.id}`);
   }, []);
 
   const updateExpense = useCallback((id: string, updates: Partial<Expense>) => {
