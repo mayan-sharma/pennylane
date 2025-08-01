@@ -6,15 +6,12 @@ import { ExpenseForm } from './components/ExpenseForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { BackupRestore } from './components/BackupRestore';
 import { BudgetManagement } from './components/budget';
-import { SmartAnalytics } from './components/SmartAnalytics';
-import { TaxManagement } from './components/TaxManagement';
-import { AdvancedSettings } from './components/AdvancedSettings';
 import { useExpenses } from './hooks/useExpenses';
 import { useBudgets } from './hooks/useBudgets';
 import { AppSettingsProvider, useAppSettings } from './hooks/useAppSettings';
 import { usePersistentState, useSessionState } from './hooks/usePersistentState';
 import { stateManager } from './utils/stateManager';
-import type { ExpenseFormData, Expense } from './types';
+import type { Expense } from './types';
 
 // Internal App component that uses settings
 function AppContent() {
@@ -66,22 +63,27 @@ function AppContent() {
     setShowForm(true);
   };
 
-  const handleFormSubmit = (data: ExpenseFormData) => {
+  const handleFormSubmit = (data: any) => {
+    const expenseData = {
+      date: data.date,
+      amount: parseFloat(data.amount),
+      category: data.category,
+      description: data.description,
+      merchant: data.merchant,
+      tags: data.tags,
+      paymentMethod: data.paymentMethod,
+      notes: data.notes,
+      currency: data.currency,
+      receipts: data.receipts
+    };
+
     if (editingExpense) {
       updateExpense(editingExpense.id, {
         ...editingExpense,
-        date: data.date,
-        amount: parseFloat(data.amount),
-        category: data.category,
-        description: data.description,
+        ...expenseData
       });
     } else {
-      addExpense({
-        date: data.date,
-        amount: parseFloat(data.amount),
-        category: data.category,
-        description: data.description,
-      });
+      addExpense(expenseData);
     }
     setShowForm(false);
     setEditingExpense(null);
@@ -192,18 +194,9 @@ function AppContent() {
         </ErrorBoundary>
 
         <ErrorBoundary>
-          {activeTab === 'analytics' && <SmartAnalytics />}
-        </ErrorBoundary>
-
-        <ErrorBoundary>
-          {activeTab === 'taxes' && <TaxManagement expenses={expenses} />}
-        </ErrorBoundary>
-
-        <ErrorBoundary>
           {activeTab === 'settings' && (
             <div className="space-y-6">
               <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-              <AdvancedSettings />
               <BackupRestore onRestore={loadExpenses} />
             </div>
           )}

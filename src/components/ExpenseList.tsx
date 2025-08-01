@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ExpenseCategory, type Expense, type ExpenseFilters, type AdvancedFilters, type BulkOperationResult, type ExpenseStats } from '../types';
+import { ExpenseCategory, type Expense, type AdvancedFilters, type BulkOperationResult, type ExpenseStats } from '../types';
 import { exportToCSV, exportToJSON } from '../utils/exportUtils';
 import { AdvancedSearch } from './AdvancedSearch';
 import { BulkOperations } from './BulkOperations';

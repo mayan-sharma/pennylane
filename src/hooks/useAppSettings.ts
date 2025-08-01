@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext, createContext, createElement, ReactNode } from 'react';
+import { useState, useEffect, useCallback, useContext, createContext, createElement, type ReactNode } from 'react';
 import { getStorageData, setStorageData } from '../utils/localStorage';
 import type { StorageOptions } from '../utils/localStorage';
 
@@ -12,7 +12,7 @@ export interface AppSettings {
   
   // Dashboard Settings
   dashboardLayout: 'grid' | 'list';
-  defaultTab: 'dashboard' | 'expenses' | 'budgets' | 'analytics' | 'taxes' | 'settings';
+  defaultTab: 'dashboard' | 'expenses' | 'budgets' | 'settings';
   showQuickAdd: boolean;
   showNotifications: boolean;
   

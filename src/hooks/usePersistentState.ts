@@ -331,7 +331,10 @@ export const usePersistentCache = <T>(
     fetch,
     invalidate,
     isStale: isStale(),
-    ...controls
+    reset: controls.reset,
+    remove: controls.remove,
+    lastSaved: controls.lastSaved,
+    hasError: controls.hasError
   };
 };
 

@@ -465,7 +465,8 @@ export const useEnhancedExpenses = () => {
       .reduce((sum, expense) => sum + expense.amount, 0);
 
     const byCategory = expenses.reduce((acc, expense) => {
-      acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+      const category = expense.category as ExpenseCategory;
+      acc[category] = (acc[category] || 0) + expense.amount;
       return acc;
     }, {} as Record<ExpenseCategory, number>);
 

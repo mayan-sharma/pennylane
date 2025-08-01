@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ExpenseCategory, type ExpenseFormData, type Expense, type Receipt, type ExpenseTemplate, type Currency } from '../types';
+import { ExpenseCategory, type Expense, type Receipt, type ExpenseTemplate, type Currency } from '../types';
 import { ReceiptUpload } from './ReceiptUpload';
-import { categorizationService, type CategoryPrediction } from '../services/categorizationService';
+import { suggestCategory, type SuggestionResult } from '../services/categorizationService';
 
 interface ExpenseFormProps {
   onSubmit: (data: ExtendedExpenseFormData) => void;
@@ -14,7 +14,11 @@ interface ExpenseFormProps {
   customCategories?: string[];
 }
 
-interface ExtendedExpenseFormData extends ExpenseFormData {
+interface ExtendedExpenseFormData {
+  date: string;
+  amount: string;
+  category: ExpenseCategory | string;
+  description: string;
   merchant?: string;
   tags?: string[];
   paymentMethod?: 'cash' | 'card' | 'bank_transfer' | 'digital_wallet' | 'other';
@@ -50,7 +54,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const [showTemplates, setShowTemplates] = useState(false);
   const [tagInput, setTagInput] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [categoryPrediction, setCategoryPrediction] = useState<CategoryPrediction | null>(null);
+  const [categoryPrediction, setCategoryPrediction] = useState<SuggestionResult | null>(null);
   const [showCategoryHelp, setShowCategoryHelp] = useState(false);
 
   const allCategories = [...Object.values(ExpenseCategory), ...customCategories];
@@ -135,7 +139,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     setFormData(prev => ({
       ...prev,
       amount: template.amount?.toString() || prev.amount,
-      category: template.category,
+      category: template.category as ExpenseCategory | string,
       description: template.description || prev.description,
       merchant: template.merchant || prev.merchant,
       tags: template.tags || prev.tags,
@@ -203,19 +207,14 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     }
   };
 
-  const predictCategory = async () => {
+  const predictCategory = () => {
     // Only predict if we have enough data and no category is set
     if ((!formData.merchant && !formData.description) || formData.category !== ExpenseCategory.OTHER) {
       return;
     }
 
     try {
-      const prediction = await categorizationService.categorizeExpense({
-        merchant: formData.merchant,
-        description: formData.description,
-        amount: parseFloat(formData.amount) || 0,
-        date: formData.date,
-      });
+      const prediction = suggestCategory(formData.description, formData.merchant);
 
       if (prediction.confidence > 0.6) { // Only show high-confidence predictions
         setCategoryPrediction(prediction);
@@ -406,10 +405,8 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                             {Math.round(categoryPrediction.confidence * 100)}% confident
                           </span>
                         </div>
-                        <div className="text-xs text-blue-700 space-y-1">
-                          {categoryPrediction.reasoning.map((reason, index) => (
-                            <div key={index}>• {reason}</div>
-                          ))}
+                        <div className="text-xs text-blue-700">
+                          Based on your description and merchant information
                         </div>
                       </div>
                       <div className="flex space-x-2 ml-3">
