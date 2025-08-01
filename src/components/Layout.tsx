@@ -2,8 +2,8 @@ import React from 'react';
 
 interface LayoutProps {
   children: React.ReactNode;
-  activeTab: 'dashboard' | 'expenses' | 'budgets' | 'settings';
-  onTabChange: (tab: 'dashboard' | 'expenses' | 'budgets' | 'settings') => void;
+  activeTab: 'dashboard' | 'expenses' | 'settings';
+  onTabChange: (tab: 'dashboard' | 'expenses' | 'settings') => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({
@@ -40,16 +40,6 @@ export const Layout: React.FC<LayoutProps> = ({
                   }`}
                 >
                   Expenses
-                </button>
-                <button
-                  onClick={() => onTabChange('budgets')}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    activeTab === 'budgets'
-                      ? 'bg-blue-100 text-blue-700'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  Budgets
                 </button>
                 <button
                   onClick={() => onTabChange('settings')}
