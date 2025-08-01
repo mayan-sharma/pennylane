@@ -1,9 +1,12 @@
 import React, { useMemo } from 'react';
-import { ExpenseCategory, type ExpenseStats, type Expense, type BudgetStatus } from "../types/expense"
+import { ExpenseCategory, type ExpenseStats, type Expense } from "../types/expense/base";
+import { type BudgetStatus } from "../types/budget/base";
 import { BudgetAlerts } from './BudgetAlerts';
 import { ExpenseTrends } from './ExpenseTrends';
 import { ExportMenu } from './ExportMenu';
 import { AIRecommendations } from './AIRecommendations';
+import { formatCurrency, formatDate } from '../utils/formatters';
+import { getCategoryColor } from '../utils/colors';
 
 interface DashboardProps {
   stats: ExpenseStats;
@@ -28,32 +31,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   isLoading = false,
   userIncome = 0
 }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-IN');
-  };
-
-  const getCategoryColor = (category: ExpenseCategory) => {
-    const colors = {
-      [ExpenseCategory.FOOD]: 'bg-orange-100 text-orange-800',
-      [ExpenseCategory.TRANSPORT]: 'bg-blue-100 text-blue-800',
-      [ExpenseCategory.BILLS]: 'bg-red-100 text-red-800',
-      [ExpenseCategory.ENTERTAINMENT]: 'bg-purple-100 text-purple-800',
-      [ExpenseCategory.SHOPPING]: 'bg-pink-100 text-pink-800',
-      [ExpenseCategory.HEALTHCARE]: 'bg-green-100 text-green-800',
-      [ExpenseCategory.EDUCATION]: 'bg-indigo-100 text-indigo-800',
-      [ExpenseCategory.TRAVEL]: 'bg-teal-100 text-teal-800',
-      [ExpenseCategory.HOUSING]: 'bg-yellow-100 text-yellow-800',
-      [ExpenseCategory.OTHER]: 'bg-gray-100 text-gray-800'
-    };
-    return colors[category] || colors[ExpenseCategory.OTHER];
-  };
 
   const topCategories = useMemo(() => 
     Object.entries(stats.byCategory)

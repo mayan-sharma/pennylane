@@ -8,6 +8,7 @@ import { QuickAddFAB } from './QuickAddFAB';
 import { PDFExporter } from './PDFExporter';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { KeyboardShortcutsHelp } from './KeyboardShortcutsHelp';
+import { formatCurrency } from '../utils/formatters';
 
 interface ExpenseListProps {
   expenses: Expense[];
@@ -119,12 +120,6 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
     setFilters({});
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN');

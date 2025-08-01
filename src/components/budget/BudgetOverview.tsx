@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Budget, BudgetStatus } from '../../types';
+import { formatCurrency } from '../../utils/formatters';
 
 interface BudgetOverviewProps {
   budgetStatuses: BudgetStatus[];
@@ -24,12 +25,6 @@ export const BudgetOverview: React.FC<BudgetOverviewProps> = ({
   showBulkActions,
   setShowBulkActions
 }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const getProgressBarColor = (percentUsed: number, isOverBudget: boolean) => {
     if (isOverBudget) return 'bg-red-500';

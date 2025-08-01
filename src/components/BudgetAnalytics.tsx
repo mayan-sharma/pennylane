@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { BudgetAnalytics as BudgetAnalyticsType, BudgetStatus } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface BudgetAnalyticsProps {
   analytics: BudgetAnalyticsType;
@@ -14,12 +15,6 @@ export const BudgetAnalytics: React.FC<BudgetAnalyticsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'trends' | 'performance' | 'patterns' | 'forecast'>('trends');
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const getPerformanceColor = (trend: string) => {
     switch (trend) {

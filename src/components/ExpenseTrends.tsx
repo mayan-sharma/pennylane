@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import type { Expense } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface ExpenseTrendsProps {
   expenses: Expense[];
@@ -10,13 +11,6 @@ export const ExpenseTrends: React.FC<ExpenseTrendsProps> = ({
   expenses, 
   period = 'month' 
 }) => {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const trendData = useMemo(() => {
     const now = new Date();

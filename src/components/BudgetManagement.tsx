@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ExpenseCategory, type Budget, type BudgetFormData, type BudgetStatus, type BudgetTemplate, type CustomCategory } from '../types';
+import { formatCurrency } from '../utils/formatters';
+import { getProgressBarColor } from '../utils/colors';
 import { BudgetAnalytics } from './BudgetAnalytics';
 import { BudgetTemplates } from './BudgetTemplates';
 import { BudgetCalendar } from './BudgetCalendar';
@@ -59,12 +61,6 @@ export const BudgetManagement: React.FC<BudgetManagementProps> = ({
     rolloverEnabled: false
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();

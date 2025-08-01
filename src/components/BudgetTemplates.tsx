@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { BudgetTemplate, Budget } from '../types';
 import { ExpenseCategory } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface BudgetTemplatesProps {
   templates: BudgetTemplate[];
@@ -29,12 +30,6 @@ export const BudgetTemplates: React.FC<BudgetTemplatesProps> = ({
     rolloverEnabled: false
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const getCategoryIcon = (category: string) => {
     const icons: Record<string, string> = {

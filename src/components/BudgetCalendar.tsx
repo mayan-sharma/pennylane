@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { BudgetStatus, Expense } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface BudgetCalendarProps {
   budgetStatuses: BudgetStatus[];
@@ -13,12 +14,6 @@ export const BudgetCalendar: React.FC<BudgetCalendarProps> = ({
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();

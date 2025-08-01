@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { compareTaxRegimes } from '../utils/taxCalculation';
+import { formatCurrency } from '../utils/formatters';
 
 export const TaxRegimeComparison: React.FC = () => {
   const [income, setIncome] = useState('');
   const [deductions, setDeductions] = useState('');
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const comparison = income ? compareTaxRegimes(
     parseFloat(income) || 0,

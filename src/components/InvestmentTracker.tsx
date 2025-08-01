@@ -3,6 +3,7 @@ import type { Investment, InvestmentFormData } from '../types/tax';
 import { useInvestments } from '../hooks/useInvestments';
 import { getFinancialYear } from '../utils/taxCalculation';
 import { INVESTMENT_TYPES, DEDUCTION_LIMITS } from '../types/tax';
+import { formatCurrency } from '../utils/formatters';
 
 export const InvestmentTracker: React.FC = () => {
   const {
@@ -26,12 +27,6 @@ export const InvestmentTracker: React.FC = () => {
     financialYear: getFinancialYear()
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-IN');

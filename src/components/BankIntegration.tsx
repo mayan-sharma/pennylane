@@ -7,6 +7,7 @@ import {
   type SyncResult 
 } from '../services/bankIntegrationService';
 import { type Expense } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface BankIntegrationProps {
   expenses: Expense[];
@@ -132,13 +133,6 @@ export const BankIntegration: React.FC<BankIntegrationProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString();

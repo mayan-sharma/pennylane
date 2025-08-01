@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Expense, ExpenseStats, BudgetStatus } from '../types';
 import { exportToCSV, exportToJSON, generatePDFReport } from '../utils/exportUtils';
 import { getAnalyticsData } from '../utils/analyticsUtils';
+import { formatCurrency } from '../utils/formatters';
 
 interface ExportMenuProps {
   expenses: Expense[];
@@ -46,13 +47,6 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({
     }
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const getExportSummary = () => {
     return {

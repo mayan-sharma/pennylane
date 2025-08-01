@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { calculateIncomeTax, getFinancialYear } from '../utils/taxCalculation';
 import type { MultiYearComparison, TaxScenario } from '../types/tax';
+import { formatCurrency } from '../utils/formatters';
 
 export const MultiYearTaxPlanner: React.FC = () => {
   const [scenarios, setScenarios] = useState<TaxScenario[]>([]);
@@ -10,13 +11,6 @@ export const MultiYearTaxPlanner: React.FC = () => {
   const [baseIncome, setBaseIncome] = useState(1200000);
   const [baseDeductions, setBaseDeductions] = useState(150000);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const formatCompactCurrency = (amount: number) => {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;

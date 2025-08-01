@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import type { Expense, ExpenseStats } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 interface AIRecommendation {
   id: string;
@@ -27,13 +28,6 @@ export const AIRecommendations: React.FC<AIRecommendationsProps> = ({
 }) => {
   const [dismissedRecommendations, setDismissedRecommendations] = useState<Set<string>>(new Set());
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const generateRecommendations = (): AIRecommendation[] => {
     const recommendations: AIRecommendation[] = [];

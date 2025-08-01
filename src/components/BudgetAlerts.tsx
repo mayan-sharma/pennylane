@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { BudgetStatus } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 type AlertType = 'warning' | 'critical' | 'info' | 'success';
 
@@ -112,12 +113,6 @@ export const BudgetAlerts: React.FC<BudgetAlertsProps> = ({
     return alerts.filter(alert => !dismissedAlerts.has(alert.id));
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const getAlertStyles = (type: AlertType) => {
     switch (type) {

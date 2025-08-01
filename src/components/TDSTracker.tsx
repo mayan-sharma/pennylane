@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import type { TDSRecord } from '../types/tax';
 import { getFinancialYear } from '../utils/taxCalculation';
+import { formatCurrency } from '../utils/formatters';
 
 export const TDSTracker: React.FC = () => {
   const [tdsRecords, setTdsRecords] = useState<TDSRecord[]>([]);
@@ -17,13 +18,6 @@ export const TDSTracker: React.FC = () => {
 
   const currentFY = getFinancialYear();
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const formatCompactCurrency = (amount: number) => {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;

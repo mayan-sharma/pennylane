@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { TaxDeduction, TaxDeductionFormData } from '../types/tax';
 import { getFinancialYear, optimizeTaxStrategy } from '../utils/taxCalculation';
 import { DEDUCTION_LIMITS } from '../types/tax';
+import { formatCurrency } from '../utils/formatters';
 
 interface TaxDeductionsProps {
   deductions: TaxDeduction[];
@@ -26,13 +27,6 @@ export const TaxDeductions: React.FC<TaxDeductionsProps> = ({
     financialYear: getFinancialYear()
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const formatCompactCurrency = (amount: number) => {
     if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(1)}Cr`;

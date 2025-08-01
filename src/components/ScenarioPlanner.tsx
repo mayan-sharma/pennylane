@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { calculateIncomeTax, compareTaxRegimes } from '../utils/taxCalculation';
+import { formatCurrency } from '../utils/formatters';
 
 interface Scenario {
   id: string;
@@ -41,13 +42,6 @@ export const ScenarioPlanner: React.FC<ScenarioPlannerProps> = ({
     isCustom: true
   });
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
 
   const predefinedScenarios: Scenario[] = useMemo(() => [
     {

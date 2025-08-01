@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { TaxReport } from '../types/tax';
 import { getFinancialYear } from '../utils/taxCalculation';
+import { formatCurrency } from '../utils/formatters';
 
 interface TaxReportsProps {
   onGenerateReport: (totalIncome: number, financialYear?: string) => TaxReport;
@@ -11,12 +12,6 @@ export const TaxReports: React.FC<TaxReportsProps> = ({ onGenerateReport }) => {
   const [selectedFY, setSelectedFY] = useState(getFinancialYear());
   const [generatedReport, setGeneratedReport] = useState<TaxReport | null>(null);
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
-    }).format(amount);
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('en-IN');
