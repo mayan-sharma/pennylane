@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { DebtPayoffGoal, DebtPayment } from '../types/expense';
+import type { DebtPayoffGoal, DebtPayment } from '../types';
 
 interface DebtPayoffTrackerProps {
   debtGoals: DebtPayoffGoal[];

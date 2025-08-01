@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { AccountabilityPartner, PartnerCheckIn } from '../types/expense';
+import type { AccountabilityPartner, PartnerCheckIn } from '../types';
 
 interface AccountabilityPartnersProps {
   partners: AccountabilityPartner[];

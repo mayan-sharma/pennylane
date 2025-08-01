@@ -12,7 +12,7 @@ import {
 import { TaxCalendar } from './TaxCalendar';
 import { DocumentTracker } from './DocumentTracker';
 import { ScenarioPlanner } from './ScenarioPlanner';
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 
 interface TaxDashboardProps {
   expenses: Expense[];

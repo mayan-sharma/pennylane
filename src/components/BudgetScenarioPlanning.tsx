@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BudgetScenario, Budget, ScenarioAdjustment } from '../types/expense';
+import type { BudgetScenario, Budget, ScenarioAdjustment } from '../types';
 
 interface BudgetScenarioPlanningProps {
   scenarios: BudgetScenario[];

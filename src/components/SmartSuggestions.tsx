@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SmartSuggestion, Expense, Budget } from '../types/expense';
+import type { SmartSuggestion, Expense, Budget } from '../types';
 
 interface SmartSuggestionsProps {
   suggestions: SmartSuggestion[];

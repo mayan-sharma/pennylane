@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import type { Expense, ExpenseStats } from '../types/expense';
+import type { Expense, ExpenseStats } from '../types';
 
 interface AIRecommendation {
   id: string;

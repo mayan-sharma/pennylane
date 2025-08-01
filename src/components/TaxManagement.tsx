@@ -8,7 +8,7 @@ import { TaxNotifications } from './TaxNotifications';
 import { TaxDashboard } from './TaxDashboard';
 import { useTax } from '../hooks/useTax';
 import { useNotifications } from '../hooks/useNotifications';
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 
 interface TaxManagementProps {
   expenses: Expense[];

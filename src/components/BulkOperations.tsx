@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { type Expense, type ExpenseImportData, type BulkOperationResult } from '../types/expense';
+import { type Expense, type ExpenseImportData, type BulkOperationResult } from '../types';
 
 interface BulkOperationsProps {
   selectedExpenses: string[];

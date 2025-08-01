@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExpenseCategory } from '../types/expense';
+import { ExpenseCategory } from '../types';
 import { CalendarDaysIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export interface FilterOptions {

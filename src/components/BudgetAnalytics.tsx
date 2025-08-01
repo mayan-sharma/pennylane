@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BudgetAnalytics as BudgetAnalyticsType, BudgetStatus } from '../types/expense';
+import type { BudgetAnalytics as BudgetAnalyticsType, BudgetStatus } from '../types';
 
 interface BudgetAnalyticsProps {
   analytics: BudgetAnalyticsType;

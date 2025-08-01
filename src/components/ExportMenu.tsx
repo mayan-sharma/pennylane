@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Expense, ExpenseStats, BudgetStatus } from '../types/expense';
+import type { Expense, ExpenseStats, BudgetStatus } from '../types';
 import { exportToCSV, exportToJSON, generatePDFReport } from '../utils/exportUtils';
 import { getAnalyticsData } from '../utils/analyticsUtils';
 

@@ -5,7 +5,7 @@ import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { BackupRestore } from './components/BackupRestore';
-import { BudgetManagement } from './components/BudgetManagement';
+import { BudgetManagement } from './components/budget';
 import { SmartAnalytics } from './components/SmartAnalytics';
 import { TaxManagement } from './components/TaxManagement';
 import { AdvancedSettings } from './components/AdvancedSettings';
@@ -14,7 +14,7 @@ import { useBudgets } from './hooks/useBudgets';
 import { AppSettingsProvider, useAppSettings } from './hooks/useAppSettings';
 import { usePersistentState, useSessionState } from './hooks/usePersistentState';
 import { stateManager } from './utils/stateManager';
-import type { ExpenseFormData, Expense } from './types/expense';
+import type { ExpenseFormData, Expense } from './types';
 
 // Internal App component that uses settings
 function AppContent() {

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { optimizeTaxStrategy, calculateIncomeTax, compareTaxRegimes } from '../utils/taxCalculation';
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 
 interface TaxOptimizerProps {
   expenses: Expense[];

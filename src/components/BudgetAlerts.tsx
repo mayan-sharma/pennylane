@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BudgetStatus } from '../types/expense';
+import type { BudgetStatus } from '../types';
 
 type AlertType = 'warning' | 'critical' | 'info' | 'success';
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ExpenseCategory, type ExpenseFormData, type Expense, type Receipt, type ExpenseTemplate, type Currency } from '../types/expense';
+import { ExpenseCategory, type ExpenseFormData, type Expense, type Receipt, type ExpenseTemplate, type Currency } from '../types';
 import { ReceiptUpload } from './ReceiptUpload';
 import { categorizationService, type CategoryPrediction } from '../services/categorizationService';
 

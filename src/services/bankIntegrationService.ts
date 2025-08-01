@@ -3,7 +3,7 @@
  * Supports multiple providers: Plaid, Yodlee, Open Banking APIs, and manual CSV import
  */
 
-import { Expense, ExpenseCategory } from '../types/expense';
+import { Expense, ExpenseCategory } from '../types';
 
 export interface BankTransaction {
   id: string;

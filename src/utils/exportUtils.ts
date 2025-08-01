@@ -1,4 +1,4 @@
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 import type { AnalyticsData } from './analyticsUtils';
 
 export interface ExportOptions {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import type { BudgetTemplate, Budget } from '../types/expense';
-import { ExpenseCategory } from '../types/expense';
+import type { BudgetTemplate, Budget } from '../types';
+import { ExpenseCategory } from '../types';
 
 interface BudgetTemplatesProps {
   templates: BudgetTemplate[];

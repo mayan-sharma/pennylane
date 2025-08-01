@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type RecurringExpense, ExpenseCategory, type Expense } from '../types/expense';
+import { type RecurringExpense, ExpenseCategory, type Expense } from '../types';
 
 interface RecurringExpenseFormProps {
   isOpen: boolean;

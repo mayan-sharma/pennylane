@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { Achievement, UserProgress } from '../types/expense';
+import type { Achievement, UserProgress } from '../types';
 
 interface AchievementSystemProps {
   userProgress: UserProgress;

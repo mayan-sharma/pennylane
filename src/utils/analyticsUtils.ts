@@ -1,5 +1,5 @@
-import type { Expense } from '../types/expense';
-import { ExpenseCategory } from '../types/expense';
+import type { Expense } from '../types';
+import { ExpenseCategory } from '../types';
 
 export interface TrendData {
   label: string;

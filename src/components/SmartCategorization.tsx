@@ -7,7 +7,7 @@ import {
   type ModelMetrics,
   type UserCorrection 
 } from '../services/categorizationService';
-import { ExpenseCategory, type Expense } from '../types/expense';
+import { ExpenseCategory, type Expense } from '../types';
 
 interface SmartCategorizationProps {
   expenses: Expense[];

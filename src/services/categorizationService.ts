@@ -4,7 +4,7 @@
  * Learns from user corrections and patterns over time
  */
 
-import { type Expense, ExpenseCategory } from '../types/expense';
+import { type Expense, ExpenseCategory } from '../types';
 
 export interface CategoryPrediction {
   category: ExpenseCategory;

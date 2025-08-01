@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type Expense, type ExpenseStats } from '../types/expense';
+import { type Expense, type ExpenseStats } from '../types';
 
 interface PDFExporterProps {
   expenses: Expense[];

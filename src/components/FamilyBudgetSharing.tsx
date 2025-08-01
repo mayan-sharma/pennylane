@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { FamilyBudget, FamilyMember, Budget } from '../types/expense';
+import type { FamilyBudget, FamilyMember, Budget } from '../types';
 
 interface FamilyBudgetSharingProps {
   familyBudgets: FamilyBudget[];

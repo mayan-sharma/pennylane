@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ExpenseCategory, type Expense, type ExpenseFilters, type ExpenseStats } from '../types/expense';
+import { ExpenseCategory, type Expense, type ExpenseFilters, type ExpenseStats } from '../types';
 import { storage } from '../utils/localStorage';
 import { stateManager } from '../utils/stateManager';
 

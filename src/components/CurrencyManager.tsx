@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type Currency } from '../types/expense';
+import { type Currency } from '../types';
 
 interface CurrencyManagerProps {
   currencies: Currency[];

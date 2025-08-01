@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { type QuickAddPreset, type ExpenseTemplate } from '../types/expense';
+import { type QuickAddPreset, type ExpenseTemplate } from '../types';
 
 interface QuickAddFABProps {
   quickAddPresets: QuickAddPreset[];

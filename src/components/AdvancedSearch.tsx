@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type AdvancedFilters, ExpenseCategory } from '../types/expense';
+import { type AdvancedFilters, ExpenseCategory } from '../types';
 
 interface AdvancedSearchProps {
   filters: AdvancedFilters;

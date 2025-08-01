@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { InvestmentGoal, InvestmentMilestone } from '../types/expense';
+import type { InvestmentGoal, InvestmentMilestone } from '../types';
 
 interface InvestmentGoalsProps {
   investmentGoals: InvestmentGoal[];

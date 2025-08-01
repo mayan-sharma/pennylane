@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type ExpenseTemplate, ExpenseCategory } from '../types/expense';
+import { type ExpenseTemplate, ExpenseCategory } from '../types';
 
 interface ExpenseTemplatesManagerProps {
   templates: ExpenseTemplate[];

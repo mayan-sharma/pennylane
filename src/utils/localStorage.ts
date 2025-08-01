@@ -1,5 +1,24 @@
 import { useState, useEffect } from 'react';
-import type { Expense, Budget, CustomCategory, BudgetTemplate } from '../types/expense';
+import type { Expense, CustomCategory } from '../types/expense';
+import type { Budget, BudgetTemplate } from '../types/budget';
+
+// Enhanced storage utilities with advanced features
+export interface StorageOptions {
+  compress?: boolean;
+  encrypt?: boolean;
+  ttl?: number; // Time to live in milliseconds
+  version?: string;
+  syncAcrossTabs?: boolean;
+}
+
+export interface StorageData<T> {
+  value: T;
+  timestamp: number;
+  ttl?: number;
+  version?: string;
+  compressed?: boolean;
+  encrypted?: boolean;
+}
 
 const STORAGE_KEY = 'expense-tracker-data';
 const BUDGET_STORAGE_KEY = 'expense-tracker-budgets';
@@ -335,24 +354,6 @@ export const storage = {
   }
 };
 
-// Enhanced storage utilities with advanced features
-export interface StorageOptions {
-  compress?: boolean;
-  encrypt?: boolean;
-  ttl?: number; // Time to live in milliseconds
-  version?: string;
-  syncAcrossTabs?: boolean;
-}
-
-export interface StorageData<T> {
-  value: T;
-  timestamp: number;
-  ttl?: number;
-  version?: string;
-  compressed?: boolean;
-  encrypted?: boolean;
-}
-
 // Simple compression using JSON stringification optimization
 const compress = (data: string): string => {
   // Simple LZ-style compression for JSON data
@@ -400,7 +401,6 @@ export const getStorageData = <T>(key: string, defaultValue: T, options?: Storag
     const rawData = localStorage.getItem(key);
     if (!rawData) return defaultValue;
 
-    let data = rawData;
     
     // Try to parse as enhanced storage data first
     try {

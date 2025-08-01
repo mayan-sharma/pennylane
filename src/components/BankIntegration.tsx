@@ -6,7 +6,7 @@ import {
   type TransactionMatchResult,
   type SyncResult 
 } from '../services/bankIntegrationService';
-import { type Expense } from '../types/expense';
+import { type Expense } from '../types';
 
 interface BankIntegrationProps {
   expenses: Expense[];

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 
 interface ExpenseTrendsProps {
   expenses: Expense[];

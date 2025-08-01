@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getStorageData, setStorageData, StorageOptions, removeStorageData } from '../utils/localStorage';
+import { 
+  getStorageData, 
+  setStorageData, 
+  removeStorageData
+} from '../utils/localStorage';
+import type { StorageOptions } from '../utils/localStorage';
 
 export interface PersistentStateOptions extends StorageOptions {
   debounceMs?: number;
@@ -27,7 +32,7 @@ export const usePersistentState = <T>(
   const [isLoading, setIsLoading] = useState(true);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasError, setHasError] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout>();
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   // Load initial value
   useEffect(() => {

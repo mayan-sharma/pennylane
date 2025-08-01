@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BudgetStatus, Expense } from '../types/expense';
+import type { BudgetStatus, Expense } from '../types';
 
 interface BudgetCalendarProps {
   budgetStatuses: BudgetStatus[];

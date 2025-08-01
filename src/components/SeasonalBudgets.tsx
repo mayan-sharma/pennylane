@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { SeasonalAdjustment, Budget } from '../types/expense';
+import type { SeasonalAdjustment, Budget } from '../types';
 
 interface SeasonalBudgetsProps {
   seasonalAdjustments: SeasonalAdjustment[];

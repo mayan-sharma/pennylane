@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { type CustomCategory, ExpenseCategory } from '../types/expense';
+import { type CustomCategory, ExpenseCategory } from '../types';
 
 interface CustomCategoriesManagerProps {
   categories: CustomCategory[];

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { BudgetChallenge, ChallengeParticipant, LeaderboardEntry } from '../types/expense';
+import type { BudgetChallenge, ChallengeParticipant, LeaderboardEntry } from '../types';
 
 interface BudgetChallengesProps {
   challenges: BudgetChallenge[];

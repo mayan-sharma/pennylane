@@ -14,7 +14,7 @@ import {
   type ExpenseImportData,
   type SpendingInsight,
   type QuickAddPreset
-} from '../types/expense';
+} from '../types';
 import { storage } from '../utils/localStorage';
 
 // Enhanced storage utilities

@@ -3,7 +3,7 @@
  * Supports Tesseract.js (local), Google Vision API, AWS Textract, and Azure Computer Vision
  */
 
-import type { Receipt } from '../types/expense';
+import type { Receipt } from '../types';
 
 export interface OCRProvider {
   name: string;

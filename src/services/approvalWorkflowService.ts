@@ -4,7 +4,7 @@
  * Supports role-based approvals, delegation, and automated routing
  */
 
-import { Expense, ExpenseCategory } from '../types/expense';
+import { Expense, ExpenseCategory } from '../types';
 
 export interface User {
   id: string;

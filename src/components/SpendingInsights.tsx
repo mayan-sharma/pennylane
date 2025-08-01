@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { type Expense, type SpendingInsight } from '../types/expense';
+import { type Expense, type SpendingInsight } from '../types';
 
 interface SpendingInsightsProps {
   expenses: Expense[];

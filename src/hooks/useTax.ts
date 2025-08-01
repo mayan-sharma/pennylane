@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { TaxDeduction, TaxableExpense, TaxReport } from '../types/tax';
 import { getStorageData, setStorageData } from '../utils/localStorage';
 import { calculateIncomeTax, getFinancialYear, isExpenseDeductible } from '../utils/taxCalculation';
-import type { Expense } from '../types/expense';
+import type { Expense } from '../types';
 
 const TAX_DEDUCTIONS_KEY = 'tax_deductions';
 const TAXABLE_EXPENSES_KEY = 'taxable_expenses';

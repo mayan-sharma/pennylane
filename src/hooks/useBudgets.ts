@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Budget, BudgetStatus, BudgetAnalytics, BudgetTemplate, Expense, CustomCategory } from '../types/expense';
+import type { Budget, BudgetStatus, BudgetAnalytics, BudgetTemplate, Expense, CustomCategory } from '../types';
 import { storage } from '../utils/localStorage';
 
 export const useBudgets = (expenses: Expense[]) => {

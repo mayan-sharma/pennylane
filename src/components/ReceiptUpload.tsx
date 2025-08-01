@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { type Receipt } from '../types/expense';
+import { type Receipt } from '../types';
 import { ocrService } from '../services/ocrService';
 
 interface ReceiptUploadProps {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { type Expense, ExpenseCategory } from '../types/expense';
+import { type Expense, ExpenseCategory } from '../types';
 
 interface InlineExpenseEditorProps {
   expense: Expense;

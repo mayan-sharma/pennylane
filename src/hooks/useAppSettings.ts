@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback, useContext, createContext, ReactNode } from 'react';
-import { getStorageData, setStorageData, StorageOptions } from '../utils/localStorage';
+import { useState, useEffect, useCallback, useContext, createContext, createElement, ReactNode } from 'react';
+import { getStorageData, setStorageData } from '../utils/localStorage';
+import type { StorageOptions } from '../utils/localStorage';
 
 export interface AppSettings {
   // UI Preferences
@@ -228,11 +229,7 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
     getStorageInfo
   };
 
-  return (
-    React.createElement(AppSettingsContext.Provider, { value: contextValue },
-      children
-    )
-  );
+  return createElement(AppSettingsContext.Provider, { value: contextValue }, children);
 };
 
 export const useAppSettings = () => {
