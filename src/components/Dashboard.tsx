@@ -4,13 +4,11 @@ import { type ExpenseStats, type Expense } from '../types';
 interface DashboardProps {
   stats: ExpenseStats;
   recentExpenses: Expense[];
-  onAddExpense: () => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   stats,
-  recentExpenses = [],
-  onAddExpense
+  recentExpenses = []
 }) => {
   const formatAmount = (amount: number) => {
     return `₹${amount.toFixed(2)}`;
@@ -28,12 +26,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <button
-          onClick={onAddExpense}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          + Add Expense
-        </button>
       </div>
 
       {/* Stats Cards */}

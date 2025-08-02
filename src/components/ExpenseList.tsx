@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
-import { EXPENSE_CATEGORIES, type Expense } from '../types';
+import { type Expense } from '../types';
+import { useCategories } from '../hooks/useCategories';
 
 interface ExpenseListProps {
   expenses: Expense[];
   onEditExpense: (expense: Expense) => void;
   onDeleteExpense: (id: string) => void;
+  onAddExpense: () => void;
 }
 
 export const ExpenseList: React.FC<ExpenseListProps> = ({
   expenses,
   onEditExpense,
-  onDeleteExpense
+  onDeleteExpense,
+  onAddExpense
 }) => {
+  const { getAllCategories } = useCategories();
+  const allCategories = getAllCategories();
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
 
@@ -54,6 +60,17 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Header with Add Button */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
+        <button
+          onClick={onAddExpense}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          + Add Expense
+        </button>
+      </div>
+
       {/* Search and Filter */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -80,7 +97,7 @@ export const ExpenseList: React.FC<ExpenseListProps> = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Categories</option>
-              {EXPENSE_CATEGORIES.map(category => (
+              {allCategories.map(category => (
                 <option key={category} value={category}>
                   {category}
                 </option>

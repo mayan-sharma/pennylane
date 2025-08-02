@@ -2,6 +2,7 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
+import { MonthlyExpenseTrends } from './components/MonthlyExpenseTrends';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useExpenses } from './hooks/useExpenses';
 import { AppSettingsProvider, useAppSettings } from './hooks/useAppSettings';
@@ -11,7 +12,7 @@ import type { Expense } from './types';
 function AppContent() {
   const { settings } = useAppSettings();
   
-  const [activeTab, setActiveTab] = usePersistentState('active-tab', settings.defaultTab, {
+  const [activeTab, setActiveTab] = usePersistentState<'dashboard' | 'expenses' | 'trends' | 'settings'>('active-tab', 'dashboard', {
     syncAcrossTabs: true
   });
   
@@ -38,7 +39,7 @@ function AppContent() {
     setShowForm(true);
   };
 
-  const handleFormSubmit = (data: any) => {
+  const handleFormSubmit = (data: { date: string; amount: string; category: string; description: string }) => {
     const expenseData = {
       date: data.date,
       amount: parseFloat(data.amount),
@@ -88,7 +89,6 @@ function AppContent() {
             <Dashboard
               stats={getExpenseStats()}
               recentExpenses={getRecentExpenses()}
-              onAddExpense={handleAddExpense}
             />
           )}
         </ErrorBoundary>
@@ -99,7 +99,14 @@ function AppContent() {
               expenses={expenses}
               onEditExpense={handleEditExpense}
               onDeleteExpense={handleDeleteExpense}
+              onAddExpense={handleAddExpense}
             />
+          )}
+        </ErrorBoundary>
+
+        <ErrorBoundary>
+          {activeTab === 'trends' && (
+            <MonthlyExpenseTrends expenses={expenses} />
           )}
         </ErrorBoundary>
 
